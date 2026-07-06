@@ -30,7 +30,7 @@ public:
 };
 int main(){
     employee e(26,26000,false);
-    ofstream file("employee_data.db",ios::binary);
+    ofstream file("employee_data.db",ios::binary); //string not supported, class should be of primitive datatype.
     file.write(reinterpret_cast<char*>(&e),sizeof(e));
     return 0;
 }
