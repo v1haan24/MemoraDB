@@ -1,3 +1,6 @@
+/*tellg - Where is the read pointer right now?
+seekg() - This moves the read pointer.
+*/
 #include<iostream>
 #include<fstream>
 #include<cstring> //required string fucntions
