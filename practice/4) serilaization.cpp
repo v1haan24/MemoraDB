@@ -1,7 +1,7 @@
 #include<iostream>
 #include<fstream>
-#include<cstring> //required string fucntions
-#include<stdio.h> //for del
+#include<cstring> 
+#include<stdio.h> 
 using namespace std;
 
 class employee{
