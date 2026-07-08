@@ -14,6 +14,14 @@ struct ColMeta{
     bool isPK;
     int size;
     int offset=0;
+    ColMeta()=default;
+    ColMeta(string n,DataType t,bool pk,int s=0){
+        name=n;type=t;isPK=pk;
+        if(type==STRING) size=s;
+        else if(type==INT) size=sizeof(int);
+        else if(type==FLOAT) size=sizeof(float);
+        else if(type==BOOL) size=sizeof(bool);
+    }
 };
 struct TableMeta{
     vector<ColMeta> colum;
@@ -31,6 +39,9 @@ public:
        for(auto &t:tables){
         if(t.name==table.name) return false;
        }
+       int pkCount=0;
+        for(const auto& col:table.colum) if(col.isPK) pkCount++;
+        if(pkCount>1) return false;
 
        if(table.rowSize==0){
         int size=0;
@@ -42,6 +53,7 @@ public:
        }
 
        ofstream file(table.name+".db",ios::binary);
+       if(!file) return false;
        
     int ntsz=table.name.length();
         file.write(reinterpret_cast<const char*>(&ntsz),sizeof(ntsz));
@@ -75,6 +87,7 @@ public:
 
     TableMeta readMetadata(string fileName){
         ifstream file(fileName,ios::binary);
+        if(!file) return {};
         TableMeta temp;
 
         int len;
@@ -112,81 +125,60 @@ int main()
 {
     Catalog catalog;
 
-    // Create table
+    // ---------------- Employee ----------------
+
     TableMeta employee;
     employee.name = "Employee";
 
-    // id
-    ColMeta id;
-    id.name = "id";
-    id.type = INT;
-    id.size = 4;
-    id.isPK = true;
+    employee.colum.push_back({"id", INT, true, 4});
+    employee.colum.push_back({"name", STRING, false, 21});
+    employee.colum.push_back({"salary", FLOAT, false, 4});
+    employee.colum.push_back({"active", BOOL, false, 1});
 
-    // name
-    ColMeta name;
-    name.name = "name";
-    name.type = STRING;
-    name.size = 21;      // VARCHAR(20)
-    name.isPK = false;
+    catalog.createTable(employee);
 
-    // salary
-    ColMeta salary;
-    salary.name = "salary";
-    salary.type = FLOAT;
-    salary.size = 4;
-    salary.isPK = false;
+    // ---------------- Student ----------------
 
-    // active
-    ColMeta active;
-    active.name = "active";
-    active.type = BOOL;
-    active.size = 1;
-    active.isPK = false;
+    TableMeta student;
+    student.name = "Student";
 
-    employee.colum.push_back(id);
-    employee.colum.push_back(name);
-    employee.colum.push_back(salary);
-    employee.colum.push_back(active);
+    student.colum.push_back({"rollNo", INT, true, 4});
+    student.colum.push_back({"studentName", STRING, false, 31});
+    student.colum.push_back({"cgpa", FLOAT, false, 4});
+    student.colum.push_back({"hosteller", BOOL, false, 1});
 
-    cout << "Creating Employee table...\n\n";
+    catalog.createTable(student);
 
-    if(catalog.createTable(employee))
-        cout << "Table created successfully!\n\n";
-    else
-        cout << "Table already exists!\n\n";
+    // ---------------- Course ----------------
 
-    cout << "---------- ORIGINAL METADATA ----------\n";
+    TableMeta course;
+    course.name = "Course";
 
-    cout << "Table Name : " << employee.name << endl;
-    cout << "Row Size   : " << employee.rowSize << endl;
+    course.colum.push_back({"courseId", INT, true, 4});
+    course.colum.push_back({"courseName", STRING, false, 41});
+    course.colum.push_back({"credits", INT, false, 4});
 
-    for(const auto &c : employee.colum)
-    {
-        cout << "\nColumn Name : " << c.name << endl;
-        cout << "Type        : " << c.type << endl;
-        cout << "Size        : " << c.size << endl;
-        cout << "Offset      : " << c.offset << endl;
-        cout << "Primary Key : " << c.isPK << endl;
-    }
+    catalog.createTable(course);
 
-    cout << "\n\nReading metadata back from Employee.db...\n\n";
+    cout << "All tables created.\n\n";
 
-    TableMeta read = catalog.readMetadata("Employee.db");
+    // ---------------- Read Employee ----------------
 
-    cout << "---------- READ METADATA ----------\n";
+    TableMeta emp = catalog.readMetadata("Employee.db");
 
-    cout << "Table Name : " << read.name << endl;
-    cout << "Row Size   : " << read.rowSize << endl;
+    cout << "Employee Row Size : " << emp.rowSize << endl;
 
-    for(const auto &c : read.colum)
-    {
-        cout << "\nColumn Name : " << c.name << endl;
-        cout << "Type        : " << c.type << endl;
-        cout << "Size        : " << c.size << endl;
-        cout << "Offset      : " << c.offset << endl;
-        cout << "Primary Key : " << c.isPK << endl;
-    }
+    // ---------------- Read Student ----------------
+
+    TableMeta stu = catalog.readMetadata("Student.db");
+
+    cout << "Student Row Size : " << stu.rowSize << endl;
+
+    // ---------------- Read Course ----------------
+
+    TableMeta cou = catalog.readMetadata("Course.db");
+
+    cout << "Course Row Size : " << cou.rowSize << endl;
 
     return 0;
 }
