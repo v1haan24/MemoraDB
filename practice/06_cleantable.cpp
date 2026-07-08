@@ -97,7 +97,7 @@ public:
 
         CalcOffset(table);
         if(table.rowSize==0) return false;
-        
+
         ofstream file(string(table.name)+".db",ios::binary);
         if(!file) return false;
 
@@ -131,7 +131,6 @@ public:
         TableMeta temp;
         readBinary(file,temp.metadataSize);
         file.read(temp.name,tns);
-        temp.name[tns-1]='\0';
         readBinary(file,temp.rowCount);
         readBinary(file,temp.rowSize);
 
