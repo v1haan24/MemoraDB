@@ -1,19 +1,28 @@
-/*
-Database File Layout
+# Current Binary File Format
 
-4 bytes   metadataSize
-30 bytes  tableName
-4 bytes   rowCount
-4 bytes   rowSize
-4 bytes   columnCount
+```
++------------------------------+
+| metadataSize      (4 bytes)  |
++------------------------------+
+| tableName        (30 bytes)  |
++------------------------------+
+| rowCount          (4 bytes)  |
++------------------------------+
+| rowSize           (4 bytes)  |
++------------------------------+
+| columnCount       (4 bytes)  |
++------------------------------+
 
-Repeated for each column:
-30 bytes  columnName
-4 bytes   DataType
-4 bytes   size
-4 bytes   offset
-1 byte    isPrimaryKey
+For each column:
 
--------------------------
-Records begin here
-*/
++------------------------------+
+| columnName      (30 bytes)   |
+| DataType         (4 bytes)   |
+| size             (4 bytes)   |
+| offset           (4 bytes)   |
+| isPrimaryKey     (1 byte)    |
++------------------------------+
+
+--------------------------------
+Records begin here...
+```
