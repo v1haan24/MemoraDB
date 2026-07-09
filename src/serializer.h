@@ -4,14 +4,14 @@
 using namespace std;
 
 template<typename T>
-void writeBinary(ofstream& file,const T& value){
+void writeBinary(ostream& file,const T& value){
     file.write(reinterpret_cast<const char*>(&value),sizeof(T));
 }
 
 template<typename T>
-void readBinary(ifstream& file,T& value){
+void readBinary(istream& file,T& value){
     file.read(reinterpret_cast<char*>(&value),sizeof(T));
 }
 
-void writeColumn(ofstream& file,const ColMeta& col);
-void readColumn(ifstream& file,ColMeta& col);
+void writeColumn(ostream& file,const ColMeta& col);
+void readColumn(istream& file,ColMeta& col);

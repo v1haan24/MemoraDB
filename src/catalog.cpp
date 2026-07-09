@@ -16,7 +16,7 @@ void Catalog::CalcOffset(TableMeta& table){
             c.offset=size;
             size+=c.size;
         }
-        table.rowSize=size;
+        table.payloadSize=size;
 }
 
 bool Catalog::createTable(TableMeta& table){
@@ -35,18 +35,25 @@ bool Catalog::createTable(TableMeta& table){
 
 
         CalcOffset(table);
-        if(table.rowSize==0) return false;
+        if(table.payloadSize==0) return false;
 
         ofstream file("data/"+string(table.name)+".db",ios::binary);
         if(!file) return false;
 
         table.columnCount=table.columns.size();
-        table.metadataSize=46+43*table.columnCount; //<--- if change in cns,tns change this too
+        table.metadataSize=
+                sizeof(int)+tns+sizeof(int)+sizeof(int)+sizeof(int)+
+                table.columnCount*(
+                cns+
+                sizeof(DataType)+
+                sizeof(int)+
+                sizeof(int)+
+                sizeof(bool)); //<--- if change in cns,tns change this too
         writeBinary(file,table.metadataSize);
 
         file.write(table.name,tns);
         writeBinary(file,table.rowCount);
-        writeBinary(file,table.rowSize);
+        writeBinary(file,table.payloadSize);
 
         writeBinary(file,table.columnCount);
         for(const auto& col:table.columns) writeColumn(file,col);
@@ -59,7 +66,7 @@ TableMeta* Catalog::getTable(const string& tableName){
         for(auto &t:tables){
             if(strcmp(t.name,tableName.c_str())==0) return &t;
        }
-       return NULL;
+       return nullptr;
 }
 
 TableMeta Catalog::readMetadata(string fileName){
@@ -69,7 +76,7 @@ TableMeta Catalog::readMetadata(string fileName){
         readBinary(file,temp.metadataSize);
         file.read(temp.name,tns);
         readBinary(file,temp.rowCount);
-        readBinary(file,temp.rowSize);
+        readBinary(file,temp.payloadSize);
 
         readBinary(file,temp.columnCount);
         for(int i=0;i<temp.columnCount;i++){

@@ -1,8 +1,11 @@
 #include <iostream>
 #include "catalog.h"
+#include "table.h"
+
 using namespace std;
 
-int main(){
+int main()
+{
     Catalog catalog;
 
     TableMeta employee;
@@ -11,33 +14,23 @@ int main(){
     employee.columns.push_back({"name",STRING,false,21});
     employee.columns.push_back({"salary",FLOAT,false});
     employee.columns.push_back({"active",BOOL,false});
+
     catalog.createTable(employee);
 
-    TableMeta student;
-    strcpy(student.name,"Student");
-    student.columns.push_back({"rollNo",INT,true});
-    student.columns.push_back({"studentName",STRING,false,31});
-    student.columns.push_back({"cgpa",FLOAT,false});
-    student.columns.push_back({"hosteller",BOOL,false});
-    catalog.createTable(student);
+    Table table(employee);
 
-    TableMeta course;
-    strcpy(course.name,"Course");
-    course.columns.push_back({"courseId",INT,true});
-    course.columns.push_back({"courseName",STRING,false,41});
-    course.columns.push_back({"credits",INT,false});
-    catalog.createTable(course);
+    Row r1;
+    r1.values={"1","Alice","50000.5","true"};
 
-    cout<<"All tables created.\n\n";
+    Row r2;
+    r2.values={"2","Bob","75000","false"};
 
-    TableMeta emp=catalog.readMetadata("Employee.db");
-    cout<<emp.name<<" Row Size : "<<emp.rowSize<<endl;
+    Row r3;
+    r3.values={"1","Charlie","90000","true"};   // Duplicate PK
 
-    TableMeta stu=catalog.readMetadata("Student.db");
-    cout<<stu.name<<" Row Size : "<<stu.rowSize<<endl;
-
-    TableMeta cou=catalog.readMetadata("Course.db");
-    cout<<cou.name<<" Row Size : "<<cou.rowSize<<endl;
+    cout<<"Insert 1 : "<<table.insert(r1)<<endl;
+    cout<<"Insert 2 : "<<table.insert(r2)<<endl;
+    cout<<"Insert 3 : "<<table.insert(r3)<<endl;
 
     return 0;
 }

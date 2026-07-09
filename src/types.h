@@ -6,6 +6,7 @@ using namespace std;
 
 #define cns 30 //fixed col name size
 #define tns 30 //fixed table name size
+#define RHSZ (sizeof(uint64_t)+sizeof(bool))
 
 enum DataType {INT,FLOAT,STRING,BOOL};
 
@@ -33,5 +34,11 @@ struct TableMeta{
     int rowCount=0;
     int columnCount;
     char name[tns];
-    int rowSize=0;
+    int payloadSize=0;
 };
+
+struct RecordVersion{
+    uint64_t timestamp;
+    uint64_t offset;
+};
+

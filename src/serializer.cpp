@@ -1,6 +1,6 @@
 #include "serializer.h"
 
-void writeColumn(ofstream& file,const ColMeta& col){
+void writeColumn(ostream& file,const ColMeta& col){
     file.write(col.name,cns);
     writeBinary(file,col.type);
     writeBinary(file,col.size);
@@ -8,7 +8,7 @@ void writeColumn(ofstream& file,const ColMeta& col){
     writeBinary(file,col.isPK);
 }
 
-void readColumn(ifstream& file,ColMeta& col){
+void readColumn(istream& file,ColMeta& col){
     file.read(col.name,cns);
     readBinary(file,col.type);
     readBinary(file,col.size);
