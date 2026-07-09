@@ -1,0 +1,37 @@
+#pragma once
+#include<vector>
+#include<cstring>
+#include<string>
+using namespace std;
+
+#define cns 30 //fixed col name size
+#define tns 30 //fixed table name size
+
+enum DataType {INT,FLOAT,STRING,BOOL};
+
+struct ColMeta{
+    char name[cns];
+    bool isPK;
+    DataType type;
+    int size;
+    int offset=0;
+    ColMeta()=default;
+    ColMeta(string n,DataType t,bool pk,int s=0){
+        strncpy(name,n.c_str(),cns-1);
+        name[cns-1]='\0';
+        type=t;isPK=pk;
+        if(type==STRING) size=s;
+        else if(type==INT) size=sizeof(int);
+        else if(type==FLOAT) size=sizeof(float);
+        else if(type==BOOL) size=sizeof(bool);
+    }
+};
+
+struct TableMeta{
+    int metadataSize;
+    vector<ColMeta> columns;
+    int rowCount=0;
+    int columnCount;
+    char name[tns];
+    int rowSize=0;
+};
