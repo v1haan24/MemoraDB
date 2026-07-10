@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "types.h"
+#include "../types.h"
 using namespace std;
 
 class Catalog{

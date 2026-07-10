@@ -120,65 +120,42 @@ public:
     
 };
 
-//testing data generated form gpt
-int main()
-{
+int main(){
     Catalog catalog;
 
-    // ---------------- Employee ----------------
-
     TableMeta employee;
-    employee.name = "Employee";
-
-    employee.colum.push_back({"id", INT, true, 4});
-    employee.colum.push_back({"name", STRING, false, 21});
-    employee.colum.push_back({"salary", FLOAT, false, 4});
-    employee.colum.push_back({"active", BOOL, false, 1});
-
+    employee.name="Employee";
+    employee.colum.push_back({"id",INT,true,4});
+    employee.colum.push_back({"name",STRING,false,21});
+    employee.colum.push_back({"salary",FLOAT,false,4});
+    employee.colum.push_back({"active",BOOL,false,1});
     catalog.createTable(employee);
 
-    // ---------------- Student ----------------
-
     TableMeta student;
-    student.name = "Student";
-
-    student.colum.push_back({"rollNo", INT, true, 4});
-    student.colum.push_back({"studentName", STRING, false, 31});
-    student.colum.push_back({"cgpa", FLOAT, false, 4});
-    student.colum.push_back({"hosteller", BOOL, false, 1});
-
+    student.name="Student";
+    student.colum.push_back({"rollNo",INT,true,4});
+    student.colum.push_back({"studentName",STRING,false,31});
+    student.colum.push_back({"cgpa",FLOAT,false,4});
+    student.colum.push_back({"hosteller",BOOL,false,1});
     catalog.createTable(student);
 
-    // ---------------- Course ----------------
-
     TableMeta course;
-    course.name = "Course";
-
-    course.colum.push_back({"courseId", INT, true, 4});
-    course.colum.push_back({"courseName", STRING, false, 41});
-    course.colum.push_back({"credits", INT, false, 4});
-
+    course.name="Course";
+    course.colum.push_back({"courseId",INT,true,4});
+    course.colum.push_back({"courseName",STRING,false,41});
+    course.colum.push_back({"credits",INT,false,4});
     catalog.createTable(course);
 
-    cout << "All tables created.\n\n";
+    cout<<"All tables created.\n\n";
 
-    // ---------------- Read Employee ----------------
+    TableMeta emp=catalog.readMetadata("Employee.db");
+    cout<<"Employee Row Size : "<<emp.rowSize<<endl;
 
-    TableMeta emp = catalog.readMetadata("Employee.db");
-
-    cout << "Employee Row Size : " << emp.rowSize << endl;
-
-    // ---------------- Read Student ----------------
-
-    TableMeta stu = catalog.readMetadata("Student.db");
-
-    cout << "Student Row Size : " << stu.rowSize << endl;
-
-    // ---------------- Read Course ----------------
+    TableMeta stu=catalog.readMetadata("Student.db");
+    cout<<"Student Row Size : "<<stu.rowSize<<endl;
 
     TableMeta cou = catalog.readMetadata("Course.db");
-
-    cout << "Course Row Size : " << cou.rowSize << endl;
+    cout<<"Course Row Size : "<<cou.rowSize<<endl;
 
     return 0;
 }

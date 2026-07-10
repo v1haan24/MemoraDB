@@ -1,6 +1,6 @@
 #pragma once
 #include <fstream>
-#include "types.h"
+#include "../types.h"
 using namespace std;
 
 template<typename T>
