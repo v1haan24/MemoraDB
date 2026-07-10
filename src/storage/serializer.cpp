@@ -53,3 +53,31 @@ void Table::writePayload(fstream& file,const Row& row){
     }
 }
 
+Row Table::readPayload(fstream& file){
+    Row row;
+    for(int i=0;i<meta.columnCount;i++){
+        if(meta.columns[i].type==INT){
+            int x;
+            readBinary(file,x);
+            row.values.push_back(to_string(x));
+        }
+        else if(meta.columns[i].type==FLOAT){
+            float x;
+            readBinary(file,x);
+            row.values.push_back(to_string(x));
+        }
+        else if(meta.columns[i].type==BOOL){
+            bool x;
+            readBinary(file,x);
+            row.values.push_back(x?"true":"false");
+
+        }
+        else if(meta.columns[i].type==STRING){
+            string temp(meta.columns[i].size,'\0');
+            file.read(&temp[0], meta.columns[i].size);
+            temp.resize(strlen(temp.c_str()));
+            row.values.push_back(temp);
+        }
+    }
+    return row;
+}

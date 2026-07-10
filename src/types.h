@@ -6,7 +6,7 @@ using namespace std;
 
 #define cns 30 //fixed col name size
 #define tns 30 //fixed table name size
-#define RHSZ (sizeof(uint64_t)+sizeof(bool))
+#define rhsz (sizeof(uint64_t)+sizeof(bool))
 
 enum DataType {INT,FLOAT,STRING,BOOL};
 

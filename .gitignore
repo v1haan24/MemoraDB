@@ -1,3 +1,4 @@
 .vscode/
-./tools
+tools/
 *.exe
+src/storage/read.cpp
