@@ -14,6 +14,7 @@ void Table::recoverState(){
     }
     if(pk==-1){ file.close(); return; }
 
+    history.reserve(meta.rowCount);
     file.seekg(meta.metadataSize,ios::beg);
     while(true){
         uint64_t recordStart=file.tellg();
@@ -44,7 +45,7 @@ void Table::recoverState(){
         else if(meta.columns[pk].type==STRING){
             string temp(meta.columns[pk].size,'\0');
             file.read(&temp[0],meta.columns[pk].size);
-            temp.resize(strlen(temp.c_str()));
+            temp.resize(strnlen(temp.c_str(),meta.columns[pk].size));
             primaryKey=temp;
         }
         history[primaryKey].push_back({timestamp,recordStart});

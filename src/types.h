@@ -2,6 +2,7 @@
 #include<vector>
 #include<cstring>
 #include<string>
+#include<cstdint>
 using namespace std;
 
 #define cns 30 //fixed col name size

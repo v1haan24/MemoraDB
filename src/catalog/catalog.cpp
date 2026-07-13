@@ -20,12 +20,12 @@ void Catalog::CalcOffset(TableMeta& table){
 }
 
 bool Catalog::createTable(TableMeta& table){
-        if(strlen(table.name)>=tns) return false;
+        if(strnlen(table.name,tns)>=tns) return false;
         if(table.columns.empty()) return false;
         unordered_set<string> names;
         int pkCount=0;
         for(const auto& col:table.columns){
-            if(strlen(col.name)>=cns) return false;
+            if(strnlen(col.name,cns)>=cns) return false;
             if(!names.insert(col.name).second) return false;
             if(col.type==STRING && col.size<=0) return false;
             if(col.isPK) pkCount++;

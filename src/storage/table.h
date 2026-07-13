@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <fstream>
+#include <cstdint>
 #include "../types.h"
 using namespace std;
 
@@ -18,14 +19,17 @@ class Table{
     void writePayload(fstream& file,const Row& row);
     Row readPayload(fstream& file);
     string getPrimaryKey(const Row& row);
-    Row readRow(uint64_t offset);
     void recoverState();
 public:
-    unordered_map<string,vector<RecordVersion>> history; //making it public for testing
+    unordered_map<string,vector<RecordVersion>> history;  //making it public for testing
+    Row readRow(uint64_t offset); //making it public for testing
+
+   
     Table(const TableMeta& metadata){
         meta=metadata;
         recoverState();
     }
     bool insert(const Row& row);
     Row latest(const string& pk);
+    bool deleteRow(const string& pk);
 };

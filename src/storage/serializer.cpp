@@ -30,6 +30,7 @@ uint64_t Table::writeHeader(fstream& file){
 }
 
 void Table::writePayload(fstream& file,const Row& row){
+    vector<char> temp;
     for(int i=0;i<meta.columnCount;i++){
         if(meta.columns[i].type==INT){
             int x=stoi(row.values[i]);
@@ -44,10 +45,10 @@ void Table::writePayload(fstream& file,const Row& row){
             writeBinary(file,x);
         }
         else if(meta.columns[i].type==STRING){
-            vector<char> temp(meta.columns[i].size,'\0');
-            memcpy(temp.data(),
-            row.values[i].data(),
-            min((int)row.values[i].size(),meta.columns[i].size-1));
+           temp.assign(meta.columns[i].size,'\0');
+            memcpy( temp.data(),
+                    row.values[i].data(),
+                    min((int)row.values[i].size(),meta.columns[i].size-1));
             file.write(temp.data(),meta.columns[i].size);
         }
     }
@@ -75,7 +76,7 @@ Row Table::readPayload(fstream& file){
         else if(meta.columns[i].type==STRING){
             string temp(meta.columns[i].size,'\0');
             file.read(&temp[0], meta.columns[i].size);
-            temp.resize(strlen(temp.c_str()));
+            temp.resize(strnlen(temp.c_str(),meta.columns[i].size));
             row.values.push_back(temp);
         }
     }

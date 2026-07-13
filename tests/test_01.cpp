@@ -9,7 +9,8 @@ int main(){
     Catalog catalog;
     
     TableMeta student;
-    strcpy(student.name,"Student");
+    strncpy(student.name,"Student",tns-1);
+    student.name[tns-1]='\0';
     student.columns.push_back({"rollNo",INT,true});
     student.columns.push_back({"name",STRING,false,30});
     student.columns.push_back({"branch",STRING,false,10});

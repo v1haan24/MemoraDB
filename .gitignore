@@ -1,4 +1,6 @@
-.vscode/
-tools/
+#.vscode/
 *.exe
-src/storage/read.cpp
+tests/bench_insert.cpp
+tests/bench_latest.cpp
+tests/bench_recovery.cpp
+

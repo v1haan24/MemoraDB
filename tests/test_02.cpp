@@ -40,6 +40,8 @@ int main(){
     assert(table.insert(r7)==false);
     assert(table.insert(r8)==false);
 
+    table.deleteRow("101");
+
     cout<<"\nRecovered Map\n";
     for(const auto &p:table.history){
         cout << p.first << " -> ";
@@ -49,6 +51,15 @@ int main(){
 
         cout<<'\n';
     }
+    Row re=table.readRow(725);
+    for(auto s:re.values){
+        cout<<s<<endl;
+    }
+    Row r=table.latest("101");
+    for(auto s:r.values){
+        cout<<s<<endl;
+    }
+    
 
     cout<<"Recovery test passed!\n";
     return 0;
