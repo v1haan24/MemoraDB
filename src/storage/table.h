@@ -17,14 +17,13 @@ class Table{
     bool validateValue(const string& value,const ColMeta& col);
     uint64_t writeHeader(fstream& file);
     void writePayload(fstream& file,const Row& row);
-    Row readPayload(fstream& file);
     string getPrimaryKey(const Row& row);
     void recoverState();
 public:
     unordered_map<string,vector<RecordVersion>> history;  //making it public for testing
     Row readRow(uint64_t offset); //making it public for testing
-
-   
+    Row readPayload(fstream& file); //making it public for testing
+    
     Table(const TableMeta& metadata){
         meta=metadata;
         recoverState();
@@ -32,4 +31,6 @@ public:
     bool insert(const Row& row);
     Row latest(const string& pk);
     bool deleteRow(const string& pk);
+    bool update(const Row& row);
+    void printDatabase();
 };

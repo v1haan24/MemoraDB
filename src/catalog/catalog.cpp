@@ -1,5 +1,6 @@
 #include "catalog.h"
 #include "../storage/serializer.h"
+#include <iostream>
 #include <fstream>
 #include <unordered_set>
 #include <cstring>
@@ -20,25 +21,27 @@ void Catalog::CalcOffset(TableMeta& table){
 }
 
 bool Catalog::createTable(TableMeta& table){
-        if(strnlen(table.name,tns)>=tns) return false;
-        if(table.columns.empty()) return false;
+        if(strnlen(table.name,tns)>=tns){cerr<<"Table name exceeds "<<tns-1<<" characters.\n"; return false;}
+        if(table.columns.empty()){cerr<<"Table must contain at least one column.\n"; return false;}
         unordered_set<string> names;
         int pkCount=0;
         for(const auto& col:table.columns){
-            if(strnlen(col.name,cns)>=cns) return false;
-            if(!names.insert(col.name).second) return false;
-            if(col.type==STRING && col.size<=0) return false;
+            if(strnlen(col.name,cns)>=cns){cerr<<"Column name '"<<col.name<<"' exceeds "<<cns-1<<" characters.\n";return false;}
+            if(!names.insert(col.name).second){cerr<<"Duplicate column name: "<<col.name<<"\n"; return false;}
+            if(col.type==STRING && col.size<=0){cerr<<"Invalid size for STRING column '"<<col.name<<"'.\n";return false;}
             if(col.isPK) pkCount++;
         }
-        if(pkCount!=1) return false;
-        if(exist(table.name)) return false;
+        if(pkCount!=1){cerr<<"Exactly one primary key is required.\n";return false;}
+        if(exist(table.name)){cerr<<"Table '"<<table.name<<"' already exists.\n"; return false;}
+        ifstream check("data/"+string(table.name)+".db",ios::binary);
+        if(check){ cerr<<"Table '"<<table.name<<"' already exists.\n"; return false;}
 
 
         CalcOffset(table);
-        if(table.payloadSize==0) return false;
+        if(table.payloadSize==0){cerr<<"Payload size cannot be zero.\n"; return false;}
 
         ofstream file("data/"+string(table.name)+".db",ios::binary);
-        if(!file) return false;
+        if(!file){cerr<<"Failed to create file for table '"<<table.name<<"'.\n"; return false;}
 
         table.columnCount=table.columns.size();
         table.metadataSize=
@@ -48,7 +51,7 @@ bool Catalog::createTable(TableMeta& table){
                 sizeof(DataType)+
                 sizeof(int)+
                 sizeof(int)+
-                sizeof(bool)); //<--- if change in cns,tns change this too
+                sizeof(bool)); 
         writeBinary(file,table.metadataSize);
 
         file.write(table.name,tns);
@@ -71,7 +74,7 @@ TableMeta* Catalog::getTable(const string& tableName){
 
 TableMeta Catalog::readMetadata(string fileName){
         ifstream file("data/"+fileName,ios::binary);
-        if(!file) return {};
+        if(!file){cerr<<"Unable to open metadata file "<<fileName<<"\n"; return {}; }
         TableMeta temp;
         readBinary(file,temp.metadataSize);
         file.read(temp.name,tns);

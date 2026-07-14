@@ -1,26 +1,24 @@
 #include "table.h"
 #include <fstream>
 #include <vector>
+#include <iostream>
 #include <chrono>
 #include "serializer.h"
 
 bool Table::deleteRow(const string& pk){
-    if(!history.count(pk)) return false;
-    uint64_t prevOffset=history[pk].back().offset;
+    auto it=history.find(pk);
+    if(it==history.end()){cerr<<"No row found with primary key '"<<pk<<"'.\n"; return false;}
+    uint64_t prevOffset=it->second.back().offset;
 
     fstream file("data/"+string(meta.name)+".db",ios::binary|ios::in|ios::out);
-    if(!file) return false;
+    if(!file){cerr<<"Failed to open table file '"<<meta.name<<"'.\n"; return false;}
+    
     file.seekg(prevOffset+sizeof(uint64_t),ios::beg);
-
     bool deleted;
     readBinary(file,deleted);
-    if(deleted){
-        file.close();
-        return false;
-    }
-
+    if(deleted){cerr<<"Row with primary key '"<<pk<<"' is already deleted.\n"; return false;}
+    
     vector<char> temp(meta.payloadSize);
-    file.seekg(prevOffset+rhsz,ios::beg);
     file.read(temp.data(),meta.payloadSize);
     file.seekp(0,ios::end);
     uint64_t offset=file.tellp();
@@ -33,13 +31,7 @@ bool Table::deleteRow(const string& pk){
     writeBinary(file,t);
     writeBinary(file,deleted);
     file.write(temp.data(),meta.payloadSize);
-
-    if(!file){
-        file.close();
-        return false;
-    }
-
-    history[pk].push_back({t,offset});
+    it->second.push_back({t,offset});
 
     file.close();
     return true;

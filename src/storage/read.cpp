@@ -1,5 +1,6 @@
 #include "table.h"
 #include "serializer.h"
+#include<iostream>
 #include <chrono>
 #include <cstring>
 #include<climits>
@@ -8,14 +9,19 @@
 
 Row Table::readRow(uint64_t offset){
     fstream file("data/"+string(meta.name)+".db",ios::binary|ios::in);
-    if(!file) return {};
+    if(!file){ cerr<<"Failed to open table file '"<<meta.name<<"'.\n"; return {};}
     
     file.seekg(offset,ios::beg);
     uint64_t timestamp;
     bool deleted;
     readBinary(file,timestamp);
     readBinary(file,deleted);
-    //if(deleted){ file.close(); return {}; }
+    if(!file){
+        cerr<<"Corrupted record at offset "<<offset<<".\n";
+        file.close();
+        return {};
+    }
+    if(deleted){ file.close(); return {}; }
     Row row=readPayload(file);
     file.close();
     return row;

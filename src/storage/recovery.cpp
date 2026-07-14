@@ -5,14 +5,14 @@ using namespace std;
 
 void Table::recoverState(){
     fstream file("data/"+string(meta.name)+".db",ios::binary|ios::in);
-    if(!file) return;
+    if(!file){ cerr<<"Failed to open table file '"<<meta.name<<"' for recovery.\n"; return;}
 
     meta.rowCount=0;
     int pk=-1;
     for(int i=0;i<meta.columnCount;i++){
         if(meta.columns[i].isPK){ pk=i; break; }
     }
-    if(pk==-1){ file.close(); return; }
+    if(pk==-1){ cerr<<"Table '"<<meta.name<<"' has no primary key column.\n"; file.close(); return; }
 
     history.reserve(meta.rowCount);
     file.seekg(meta.metadataSize,ios::beg);
@@ -21,7 +21,10 @@ void Table::recoverState(){
 
         uint64_t timestamp;
         readBinary(file,timestamp);
-        if(!file) break;
+        if(!file){
+            if(!file.eof()) cerr<<"Corrupted record encountered during recovery.\n";
+            break;
+        }
         bool deleted;
         readBinary(file,deleted);
         file.seekg(recordStart+rhsz+meta.columns[pk].offset,ios::beg);
