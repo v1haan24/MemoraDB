@@ -20,14 +20,13 @@ void readColumn(istream& file,ColMeta& col)
     readBinary(file,col.isPK);
 }
 
-uint64_t Table::writeHeader(fstream& file)
+uint64_t Table::writeHeader(fstream& file, bool deleted=false)
 {
     uint64_t timestamp =
         chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now().time_since_epoch()
         ).count();
 
-    bool deleted=false;
     writeBinary(file,timestamp);
     writeBinary(file,deleted);
     return timestamp;
