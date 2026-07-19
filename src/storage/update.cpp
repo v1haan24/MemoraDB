@@ -3,14 +3,22 @@
 #include <fstream>
 using namespace std;
 
-bool Table::insert(const Row& row){
+bool Table::update(const Row& row){
     if(!validator.validateRow(row,meta)) return false;
-
     string pk=getPrimaryKey(row);
-    if(history.contains(pk)){cerr<<"Primary key '"<<pk<<"' already exists.\n"; return false;}
-
+    if(!history.contains(pk)){cerr<<"No row found with primary key '"<<pk<<"'.\n"; return false;}
     fstream file("data/"+string(meta.name)+".db",ios::binary|ios::in|ios::out);
     if(!file){ cerr<<"Failed to open table file '"<<meta.name<<"'.\n"; return false; }
+
+    uint64_t prevOffset=history.latest(pk).offset;
+    file.seekg(prevOffset+rhsz-sizeof(bool),ios::beg);
+    bool deleted;
+    readBinary(file,deleted);
+    if(deleted){
+        cerr<<"Cannot update a deleted row.\n";
+        file.close();
+        return false;
+    }
 
     file.seekp(0,ios::end); 
     uint64_t offset=file.tellp();
@@ -22,9 +30,6 @@ bool Table::insert(const Row& row){
         return false;
     }
     history.addVersion(pk,{t, offset});
-    meta.rowCount++;
-    file.seekp(sizeof(int)+tns,ios::beg);
-    writeBinary(file,meta.rowCount);
     file.close();
     return true;
 }

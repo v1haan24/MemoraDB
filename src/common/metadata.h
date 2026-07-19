@@ -1,15 +1,11 @@
 #pragma once
-#include<vector>
-#include<cstring>
-#include<string>
-#include<cstdint>
+#include <vector>
+#include <string>
+#include <cstring>
+#include "constants.h"
+#include <cstring>
+#include <cstdint>
 using namespace std;
-
-#define cns 30 //fixed col name size
-#define tns 30 //fixed table name size
-#define rhsz (sizeof(uint64_t)+sizeof(bool))
-
-enum DataType {INT,FLOAT,STRING,BOOL};
 
 struct ColMeta{
     char name[cns];
@@ -42,4 +38,3 @@ struct RecordVersion{
     uint64_t timestamp;
     uint64_t offset;
 };
-

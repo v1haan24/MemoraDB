@@ -1,6 +1,2 @@
 #.vscode/
 *.exe
-tests/bench_insert.cpp
-tests/bench_latest.cpp
-tests/bench_recovery.cpp
-

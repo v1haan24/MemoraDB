@@ -7,24 +7,12 @@
             "command": "powershell",
             "args": [
                 "-Command",
-                "$files = Get-ChildItem \"${workspaceFolder}\\src\" -Recurse -Filter *.cpp | ForEach-Object { $_.FullName }; g++ \"${file}\" $files -o \"${workspaceFolder}\\tests\\test.exe\"; if ($?) { & \"${workspaceFolder}\\tests\\test.exe\" }"
+                "$files = Get-ChildItem \"${workspaceFolder}\\src\" -Recurse -Filter *.cpp | ForEach-Object { $_.FullName }; & \"C:\\msys64\\ucrt64\\bin\\g++.exe\" -std=c++17 \"${file}\" $files -o \"${workspaceFolder}\\tests\\test.exe\"; if ($?) { & \"${workspaceFolder}\\tests\\test.exe\" }"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": [
-                "$gcc"
-            ]
-        },
-        {
-            "label": "Build Practice File",
-            "type": "shell",
-            "command": "powershell",
-            "args": [
-                "-Command",
-                "g++ \"${file}\" -o \"${fileDirname}\\temp.exe\"; if ($?) { & \"${fileDirname}\\temp.exe\" }"
-            ],
             "problemMatcher": [
                 "$gcc"
             ]

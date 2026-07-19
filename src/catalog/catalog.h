@@ -1,15 +1,20 @@
 #pragma once
-#include <vector>
+#include <unordered_map>
 #include <string>
-#include "../types.h"
+#include "../common/metadata.h"
+#include "../storage/table.h"
 using namespace std;
 
 class Catalog{
-    vector<TableMeta> tables;
+private:
+    unordered_map<string, Table> tables;
     bool exist(const string& tableName);
     void CalcOffset(TableMeta& table);
+    TableMeta readMetadata(const string& fileName);
+    void loadTables();
 public:
+    Catalog(){loadTables();}
     bool createTable(TableMeta& table);
-    TableMeta* getTable(const string& tableName);
-    TableMeta readMetadata(string fileName);
+    Table* getTable(const string& tableName);
+    void showTables();
 };

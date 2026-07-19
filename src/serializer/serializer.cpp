@@ -1,8 +1,8 @@
 #include "serializer.h"
-#include "table.h"
 #include <chrono>
+#include <cstring>
 
-void writeColumn(ostream& file,const ColMeta& col){
+void Serializer::writeColumn(ostream& file,const ColMeta& col){
     file.write(col.name,cns);
     writeBinary(file,col.type);
     writeBinary(file,col.size);
@@ -10,7 +10,7 @@ void writeColumn(ostream& file,const ColMeta& col){
     writeBinary(file,col.isPK);
 }
 
-void readColumn(istream& file,ColMeta& col){
+void Serializer::readColumn(istream& file,ColMeta& col){
     file.read(col.name,cns);
     readBinary(file,col.type);
     readBinary(file,col.size);
@@ -18,19 +18,18 @@ void readColumn(istream& file,ColMeta& col){
     readBinary(file,col.isPK);
 }
 
-uint64_t Table::writeHeader(fstream& file){
+uint64_t Serializer::writeHeader(fstream& file,bool deleted){
     uint64_t timestamp =
         chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now().time_since_epoch()
         ).count();
-    bool deleted=false;
     writeBinary(file,timestamp);
     writeBinary(file,deleted);
     return timestamp;
 }
 
-void Table::writePayload(fstream& file,const Row& row){
-    vector<char> temp;
+void Serializer::writePayload(fstream& file,const TableMeta& meta,const Row& row){
+    char temp[cns]={};
     for(int i=0;i<meta.columnCount;i++){
         if(meta.columns[i].type==INT){
             int x=stoi(row.values[i]);
@@ -45,16 +44,16 @@ void Table::writePayload(fstream& file,const Row& row){
             writeBinary(file,x);
         }
         else if(meta.columns[i].type==STRING){
-           temp.assign(meta.columns[i].size,'\0');
-            memcpy( temp.data(),
-                    row.values[i].data(),
-                    min((int)row.values[i].size(),meta.columns[i].size-1));
-            file.write(temp.data(),meta.columns[i].size);
+            memset(temp,0,cns);
+            int len=row.values[i].size();
+            if(len>meta.columns[i].size-1) len=meta.columns[i].size-1;
+            memcpy(temp,row.values[i].data(),len);
+            file.write(temp,meta.columns[i].size);
         }
     }
 }
 
-Row Table::readPayload(fstream& file){
+Row Serializer::readPayload(fstream& file,const TableMeta& meta){
     Row row;
     for(int i=0;i<meta.columnCount;i++){
         if(meta.columns[i].type==INT){

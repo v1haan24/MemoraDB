@@ -1,36 +1,34 @@
 #pragma once
-#include <vector>
 #include <string>
-#include <unordered_map>
-#include <fstream>
-#include <cstdint>
-#include "../types.h"
+#include <iostream>
+#include "../common/metadata.h"
+#include "../common/row.h"
+#include "../index/history_index.h"
+#include "../validator/validator.h"
+#include "../serializer/serializer.h"
+#include "../recovery/recovery.h"
 using namespace std;
-
-struct Row{
-    vector<string> values; //assuming parser gives string as output
-};
 
 class Table{
     TableMeta meta;
-    bool validateRow(const Row& row);
-    bool validateValue(const string& value,const ColMeta& col);
-    uint64_t writeHeader(fstream& file);
-    void writePayload(fstream& file,const Row& row);
-    string getPrimaryKey(const Row& row);
-    void recoverState();
-public:
-    unordered_map<string,vector<RecordVersion>> history;  //making it public for testing
-    Row readRow(uint64_t offset); //making it public for testing
-    Row readPayload(fstream& file); //making it public for testing
-    
-    Table(const TableMeta& metadata){
-        meta=metadata;
-        recoverState();
+    HistoryIndex history;
+    Validator validator;
+    Serializer serializer;
+    Recovery recovery;
+    string getPrimaryKey(const Row& row){
+        for(int i=0;i<meta.columnCount;i++){
+            if(meta.columns[i].isPK) return row.values[i];
+        }
+        cerr<<"Primary key not found.\n";
+        return "";
     }
+public:
+    Table(const TableMeta& metadata){meta=metadata; recovery.recoverState(meta,history);}
     bool insert(const Row& row);
-    Row latest(const string& pk);
-    bool deleteRow(const string& pk);
     bool update(const Row& row);
+    bool deleteRow(const string& pk);
+    Row readRow(uint64_t offset);
+    Row latest(const string& pk);
     void printDatabase();
+    TableMeta& getMeta(){ return meta;}
 };

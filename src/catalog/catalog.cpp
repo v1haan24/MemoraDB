@@ -1,14 +1,13 @@
 #include "catalog.h"
-#include "../storage/serializer.h"
+#include "../serializer/serializer.h"
 #include <iostream>
 #include <fstream>
-#include <unordered_set>
+#include <filesystem>
 #include <cstring>
 using namespace std;
 
 bool Catalog::exist(const string& tableName){
-        for(auto &t:tables) if(strcmp(t.name,tableName.c_str())==0) return true;
-        return false;
+    return tables.count(tableName);
 }
 
 void Catalog::CalcOffset(TableMeta& table){
@@ -21,22 +20,26 @@ void Catalog::CalcOffset(TableMeta& table){
 }
 
 bool Catalog::createTable(TableMeta& table){
+        Serializer serializer;
         if(strnlen(table.name,tns)>=tns){cerr<<"Table name exceeds "<<tns-1<<" characters.\n"; return false;}
         if(table.columns.empty()){cerr<<"Table must contain at least one column.\n"; return false;}
-        unordered_set<string> names;
+        for(int i=0;i<table.columns.size();i++){
+            for(int j=i+1;j<table.columns.size();j++){
+                if(strcmp(table.columns[i].name,table.columns[j].name)==0){
+                    cerr<<"Duplicate column name: "<<table.columns[i].name<<"\n";
+                    return false;
+                }
+            }
+        }
         int pkCount=0;
         for(const auto& col:table.columns){
             if(strnlen(col.name,cns)>=cns){cerr<<"Column name '"<<col.name<<"' exceeds "<<cns-1<<" characters.\n";return false;}
-            if(!names.insert(col.name).second){cerr<<"Duplicate column name: "<<col.name<<"\n"; return false;}
             if(col.type==STRING && col.size<=0){cerr<<"Invalid size for STRING column '"<<col.name<<"'.\n";return false;}
             if(col.isPK) pkCount++;
         }
         if(pkCount!=1){cerr<<"Exactly one primary key is required.\n";return false;}
         if(exist(table.name)){cerr<<"Table '"<<table.name<<"' already exists.\n"; return false;}
-        ifstream check("data/"+string(table.name)+".db",ios::binary);
-        if(check){ cerr<<"Table '"<<table.name<<"' already exists.\n"; return false;}
-
-
+        
         CalcOffset(table);
         if(table.payloadSize==0){cerr<<"Payload size cannot be zero.\n"; return false;}
 
@@ -59,20 +62,21 @@ bool Catalog::createTable(TableMeta& table){
         writeBinary(file,table.payloadSize);
 
         writeBinary(file,table.columnCount);
-        for(const auto& col:table.columns) writeColumn(file,col);
+        for(const auto& col:table.columns) serializer.writeColumn(file,col);
         
-        tables.push_back(table);
+        tables.emplace(table.name,Table(table));
+        file.close();
         return true;
 }
 
-TableMeta* Catalog::getTable(const string& tableName){
-        for(auto &t:tables){
-            if(strcmp(t.name,tableName.c_str())==0) return &t;
-       }
-       return nullptr;
+Table* Catalog::getTable(const string& tableName){
+        auto it=tables.find(tableName);
+        if(it==tables.end()) return nullptr;
+        return &it->second;
 }
 
-TableMeta Catalog::readMetadata(string fileName){
+TableMeta Catalog::readMetadata(const string& fileName){
+        Serializer serializer;
         ifstream file("data/"+fileName,ios::binary);
         if(!file){cerr<<"Unable to open metadata file "<<fileName<<"\n"; return {}; }
         TableMeta temp;
@@ -84,8 +88,27 @@ TableMeta Catalog::readMetadata(string fileName){
         readBinary(file,temp.columnCount);
         for(int i=0;i<temp.columnCount;i++){
             ColMeta col;
-            readColumn(file,col);
+            serializer.readColumn(file,col);
             temp.columns.push_back(col);
         }
         return temp;
+}
+
+void Catalog::loadTables(){
+    tables.clear();
+    if(!filesystem::exists("data")) return;
+    for(const auto& entry:filesystem::directory_iterator("data")){
+            if(entry.path().extension()!=".db") continue;
+            TableMeta meta=readMetadata(entry.path().filename().string());
+            if(meta.name[0]=='\0') continue;
+            tables.emplace(meta.name,Table(meta));
+    }
+}
+
+void Catalog::showTables(){
+    if(tables.empty()){
+        cout<<"No tables found.\n";
+        return;
+    }
+    for(auto &t:tables) cout<<t.first<<'\n';
 }

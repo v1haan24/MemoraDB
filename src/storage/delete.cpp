@@ -1,15 +1,13 @@
 #include "table.h"
+#include <iostream>
 #include <fstream>
 #include <vector>
-#include <iostream>
-#include <chrono>
-#include "serializer.h"
+using namespace std;
 
 bool Table::deleteRow(const string& pk){
-    auto it=history.find(pk);
-    if(it==history.end()){cerr<<"No row found with primary key '"<<pk<<"'.\n"; return false;}
-    uint64_t prevOffset=it->second.back().offset;
-
+    if(!history.contains(pk)){ cerr<<"No row found with primary key '"<<pk<<"'.\n"; return false;}
+    
+    uint64_t prevOffset=history.latest(pk).offset;
     fstream file("data/"+string(meta.name)+".db",ios::binary|ios::in|ios::out);
     if(!file){cerr<<"Failed to open table file '"<<meta.name<<"'.\n"; return false;}
     
@@ -22,16 +20,9 @@ bool Table::deleteRow(const string& pk){
     file.read(temp.data(),meta.payloadSize);
     file.seekp(0,ios::end);
     uint64_t offset=file.tellp();
-    uint64_t t=
-        chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now().time_since_epoch()
-        ).count();
-
-    deleted=true;
-    writeBinary(file,t);
-    writeBinary(file,deleted);
+    uint64_t t=serializer.writeHeader(file,true);
     file.write(temp.data(),meta.payloadSize);
-    it->second.push_back({t,offset});
+    history.addVersion(pk,{t, offset});
 
     file.close();
     return true;

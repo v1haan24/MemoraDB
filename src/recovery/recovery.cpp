@@ -1,9 +1,10 @@
-#include "serializer.h"
-#include "table.h"
+#include "recovery.h"
+#include "../serializer/serializer.h"
 #include <iostream>
+#include <string>
 using namespace std;
 
-void Table::recoverState(){
+void Recovery::recoverState(TableMeta& meta,HistoryIndex& history){
     fstream file("data/"+string(meta.name)+".db",ios::binary|ios::in);
     if(!file){ cerr<<"Failed to open table file '"<<meta.name<<"' for recovery.\n"; return;}
 
@@ -14,7 +15,6 @@ void Table::recoverState(){
     }
     if(pk==-1){ cerr<<"Table '"<<meta.name<<"' has no primary key column.\n"; file.close(); return; }
 
-    history.reserve(meta.rowCount);
     file.seekg(meta.metadataSize,ios::beg);
     while(true){
         uint64_t recordStart=file.tellg();
@@ -51,10 +51,10 @@ void Table::recoverState(){
             temp.resize(strnlen(temp.c_str(),meta.columns[pk].size));
             primaryKey=temp;
         }
-        history[primaryKey].push_back({timestamp,recordStart});
+        history.addVersion(primaryKey,{timestamp,recordStart});
         file.seekg(recordStart+rhsz+meta.payloadSize,ios::beg);
     }
 
-    meta.rowCount=(int)history.size();
+    meta.rowCount=history.size();
     file.close();
 }
