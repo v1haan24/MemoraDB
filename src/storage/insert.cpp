@@ -4,7 +4,7 @@
 using namespace std;
 
 bool Table::insert(const Row& row){
-    if(!validator.validateRow(row,meta)) return false;
+    if(!validateRow(row)) return false;
 
     string pk=getPrimaryKey(row);
     if(history.contains(pk)){cerr<<"Primary key '"<<pk<<"' already exists.\n"; return false;}
@@ -14,8 +14,8 @@ bool Table::insert(const Row& row){
 
     file.seekp(0,ios::end); 
     uint64_t offset=file.tellp();
-    uint64_t t=serializer.writeHeader(file,false);
-    serializer.writePayload(file,meta,row);
+    uint64_t t=writeHeader(file,false);
+    writePayload(file,meta,row);
     if(!file){
         cerr<<"Failed to write row to disk.\n";
         file.close();

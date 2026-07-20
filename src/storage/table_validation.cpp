@@ -1,7 +1,5 @@
-#include "validator.h"
-#include <iostream>
+#include "table.h"
 #include <sstream>
-using namespace std;
 
 bool isBool(const string& s){
     return s=="true" || s=="false";
@@ -27,7 +25,7 @@ bool isFloat(const string& s){
     return false;
 }
 
-bool Validator::validateValue(const string& value,const ColMeta& col){
+bool Table::validateValue(const string& value,const ColMeta& col){
     switch(col.type){
         case INT:
             if(!isInt(value)){
@@ -62,7 +60,7 @@ bool Validator::validateValue(const string& value,const ColMeta& col){
     return false;
 }
 
-bool Validator::validateRow(const Row& row,const TableMeta& meta){
+bool Table::validateRow(const Row& row){
     if(row.values.size()!=meta.columnCount){
         cerr<<"Expected "<<meta.columnCount
             <<" values, but got "<<row.values.size()<<".\n";

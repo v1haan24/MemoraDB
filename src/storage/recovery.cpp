@@ -1,10 +1,9 @@
-#include "recovery.h"
-#include "../serializer/serializer.h"
+#include "table.h"
 #include <iostream>
-#include <string>
+#include <fstream>
 using namespace std;
 
-void Recovery::recoverState(TableMeta& meta,HistoryIndex& history){
+void Table::recoverState(){
     fstream file("data/"+string(meta.name)+".db",ios::binary|ios::in);
     if(!file){ cerr<<"Failed to open table file '"<<meta.name<<"' for recovery.\n"; return;}
 

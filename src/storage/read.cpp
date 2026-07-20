@@ -5,6 +5,14 @@
 #include <ctime>
 using namespace std;
 
+string Table::getPrimaryKey(const Row& row){
+        for(int i=0;i<meta.columnCount;i++){
+            if(meta.columns[i].isPK) return row.values[i];
+        }
+        cerr<<"Primary key not found.\n";
+        return "";
+}
+
 Row Table::readRow(uint64_t offset){
     fstream file("data/"+string(meta.name)+".db",ios::binary|ios::in);
     if(!file){
@@ -12,7 +20,7 @@ Row Table::readRow(uint64_t offset){
         return {};
     }
     file.seekg(offset+rhsz,ios::beg);
-    return serializer.readPayload(file,meta);
+    return readPayload(file,meta);
 }
 
 Row Table::latest(const string& pk){
@@ -34,7 +42,7 @@ void Table::printDatabase(){
 
     for(int i=0;i<temp.columnCount;i++){
         ColMeta col;
-        serializer.readColumn(file,col);
+        readColumn(file,col);
         temp.columns.push_back(col);
     }
 
@@ -85,7 +93,7 @@ void Table::printDatabase(){
         if(!file) break;
         bool deleted;
         readBinary(file,deleted);
-        Row row=serializer.readPayload(file,temp);
+        Row row=readPayload(file,temp);
         time_t sec=timestamp/1000;
         tm *t=localtime(&sec);
         char buf[25];

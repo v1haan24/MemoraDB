@@ -20,7 +20,7 @@ bool Table::deleteRow(const string& pk){
     file.read(temp.data(),meta.payloadSize);
     file.seekp(0,ios::end);
     uint64_t offset=file.tellp();
-    uint64_t t=serializer.writeHeader(file,true);
+    uint64_t t=writeHeader(file,true);
     file.write(temp.data(),meta.payloadSize);
     history.addVersion(pk,{t, offset});
 

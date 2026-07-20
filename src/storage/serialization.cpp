@@ -1,8 +1,9 @@
-#include "serializer.h"
+#include "table.h"
 #include <chrono>
 #include <cstring>
+#include <fstream>
 
-void Serializer::writeColumn(ostream& file,const ColMeta& col){
+void writeColumn(ostream& file,const ColMeta& col){
     file.write(col.name,cns);
     writeBinary(file,col.type);
     writeBinary(file,col.size);
@@ -10,7 +11,7 @@ void Serializer::writeColumn(ostream& file,const ColMeta& col){
     writeBinary(file,col.isPK);
 }
 
-void Serializer::readColumn(istream& file,ColMeta& col){
+void readColumn(istream& file,ColMeta& col){
     file.read(col.name,cns);
     readBinary(file,col.type);
     readBinary(file,col.size);
@@ -18,7 +19,7 @@ void Serializer::readColumn(istream& file,ColMeta& col){
     readBinary(file,col.isPK);
 }
 
-uint64_t Serializer::writeHeader(fstream& file,bool deleted){
+uint64_t writeHeader(fstream& file,bool deleted){
     uint64_t timestamp =
         chrono::duration_cast<chrono::milliseconds>(
             chrono::system_clock::now().time_since_epoch()
@@ -28,7 +29,7 @@ uint64_t Serializer::writeHeader(fstream& file,bool deleted){
     return timestamp;
 }
 
-void Serializer::writePayload(fstream& file,const TableMeta& meta,const Row& row){
+void writePayload(fstream& file,const TableMeta& meta,const Row& row){
     char temp[cns]={};
     for(int i=0;i<meta.columnCount;i++){
         if(meta.columns[i].type==INT){
@@ -53,7 +54,7 @@ void Serializer::writePayload(fstream& file,const TableMeta& meta,const Row& row
     }
 }
 
-Row Serializer::readPayload(fstream& file,const TableMeta& meta){
+Row readPayload(fstream& file,const TableMeta& meta){
     Row row;
     for(int i=0;i<meta.columnCount;i++){
         if(meta.columns[i].type==INT){

@@ -1,9 +1,9 @@
 #include "catalog.h"
-#include "../serializer/serializer.h"
 #include <iostream>
 #include <fstream>
 #include <filesystem>
 #include <cstring>
+#include "../storage/table.h"
 using namespace std;
 
 bool Catalog::exist(const string& tableName){
@@ -20,7 +20,6 @@ void Catalog::CalcOffset(TableMeta& table){
 }
 
 bool Catalog::createTable(TableMeta& table){
-        Serializer serializer;
         if(strnlen(table.name,tns)>=tns){cerr<<"Table name exceeds "<<tns-1<<" characters.\n"; return false;}
         if(table.columns.empty()){cerr<<"Table must contain at least one column.\n"; return false;}
         for(int i=0;i<table.columns.size();i++){
@@ -62,7 +61,7 @@ bool Catalog::createTable(TableMeta& table){
         writeBinary(file,table.payloadSize);
 
         writeBinary(file,table.columnCount);
-        for(const auto& col:table.columns) serializer.writeColumn(file,col);
+        for(const auto& col:table.columns) writeColumn(file,col);
         
         tables.emplace(table.name,Table(table));
         file.close();
@@ -76,7 +75,6 @@ Table* Catalog::getTable(const string& tableName){
 }
 
 TableMeta Catalog::readMetadata(const string& fileName){
-        Serializer serializer;
         ifstream file("data/"+fileName,ios::binary);
         if(!file){cerr<<"Unable to open metadata file "<<fileName<<"\n"; return {}; }
         TableMeta temp;
@@ -88,7 +86,7 @@ TableMeta Catalog::readMetadata(const string& fileName){
         readBinary(file,temp.columnCount);
         for(int i=0;i<temp.columnCount;i++){
             ColMeta col;
-            serializer.readColumn(file,col);
+            readColumn(file,col);
             temp.columns.push_back(col);
         }
         return temp;

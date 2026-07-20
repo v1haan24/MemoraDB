@@ -38,3 +38,7 @@ struct RecordVersion{
     uint64_t timestamp;
     uint64_t offset;
 };
+
+struct Row{
+    vector<string> values; //assuming parser gives string as output
+};
