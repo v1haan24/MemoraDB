@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <cstdint>
 #include <iostream>
 #include "../common/metadata.h"
 #include "../index/history_index.h"
@@ -24,17 +25,25 @@ Row readPayload(fstream& file,const TableMeta& meta);
 class Table{
     TableMeta meta;
     HistoryIndex history;
-    string getPrimaryKey(const Row& row);
     void recoverState();
+    
+    //misc
     bool validateRow(const Row& row);
     bool validateValue(const string& value,const ColMeta& col);
+    string getPrimaryKey(const Row& row);
 public:
     Table(const TableMeta& metadata){meta=metadata; recoverState();}
     bool insert(const Row& row);
     bool update(const Row& row);
     bool deleteRow(const string& pk);
-    Row readRow(uint64_t offset);
-    Row latest(const string& pk);
+    Record readRecord(uint64_t offset);
+    Record latest(const string& pk);
     void printDatabase();
     TableMeta& getMeta(){ return meta;}
+
+    //temporal
+    Record selectAsOf(const string& pk,uint64_t timestamp);
+    vector<Record> selectBetween(const string& pk,uint64_t t1,uint64_t t2);
+    vector<Record> showHistory(const string& pk);
+    vector<Record> snapshot(uint64_t timestamp);
 };

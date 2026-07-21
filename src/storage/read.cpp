@@ -13,19 +13,24 @@ string Table::getPrimaryKey(const Row& row){
         return "";
 }
 
-Row Table::readRow(uint64_t offset){
+Record Table::readRecord(uint64_t offset){
     fstream file("data/"+string(meta.name)+".db",ios::binary|ios::in);
     if(!file){
         cerr<<"Failed to open table file '"<<meta.name<<"'.\n";
         return {};
     }
-    file.seekg(offset+rhsz,ios::beg);
-    return readPayload(file,meta);
+    file.seekg(offset,ios::beg);
+    Record record;
+    readBinary(file,record.timestamp);
+    readBinary(file,record.deleted);
+    record.row=readPayload(file,meta);
+    file.close();
+    return record;
 }
 
-Row Table::latest(const string& pk){
+Record Table::latest(const string& pk){
     if(!history.contains(pk)){cerr << "No row found.\n"; return {}; }
-    return readRow(history.latest(pk).offset);
+    return readRecord(history.latest(pk).offset);
 }
 
 //AI

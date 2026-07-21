@@ -42,3 +42,9 @@ struct RecordVersion{
 struct Row{
     vector<string> values; //assuming parser gives string as output
 };
+
+struct Record{
+    uint64_t timestamp;
+    bool deleted;
+    Row row;
+};
