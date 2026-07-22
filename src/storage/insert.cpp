@@ -22,9 +22,9 @@ bool Table::insert(const Row& row){
         return false;
     }
     history.addVersion(pk,{t, offset});
-    meta.rowCount++;
-    file.seekp(sizeof(int)+tns,ios::beg);
-    writeBinary(file,meta.rowCount);
+    //meta.rowCount++;
+    //file.seekp(sizeof(int)+tns,ios::beg);
+    //writeBinary(file,meta.rowCount);
     file.close();
     return true;
 }

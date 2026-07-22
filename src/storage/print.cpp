@@ -49,7 +49,7 @@ void Table::printDatabase(){
     TableMeta temp;
     readBinary(file,temp.metadataSize);
     file.read(temp.name,tns);
-    readBinary(file,temp.rowCount);
+    //readBinary(file,temp.rowCount);
     readBinary(file,temp.payloadSize);
     readBinary(file,temp.columnCount);
 
@@ -60,7 +60,7 @@ void Table::printDatabase(){
     }
 
     cout<<"Table : "<<temp.name<<'\n';
-    cout<<"Rows : "<<temp.rowCount<<'\n';
+    //cout<<"Rows : "<<temp.rowCount<<'\n';
     cout<<"Columns : "<<temp.columnCount<<'\n';
     cout<<"Payload Size : "<<temp.payloadSize<<'\n';
     cout<<"Metadata Size : "<<temp.metadataSize<<"\n\n";

@@ -7,7 +7,7 @@ void Table::recoverState(){
     fstream file("data/"+string(meta.name)+".db",ios::binary|ios::in);
     if(!file){ cerr<<"Failed to open table file '"<<meta.name<<"' for recovery.\n"; return;}
 
-    meta.rowCount=0;
+    //meta.rowCount=0;
     int pk=-1;
     for(int i=0;i<meta.columnCount;i++){
         if(meta.columns[i].isPK){ pk=i; break; }
@@ -54,6 +54,6 @@ void Table::recoverState(){
         file.seekg(recordStart+rhsz+meta.payloadSize,ios::beg);
     }
 
-    meta.rowCount=history.size();
+    //meta.rowCount=history.size();
     file.close();
 }

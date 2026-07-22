@@ -28,7 +28,7 @@ struct ColMeta{
 struct TableMeta{
     int metadataSize;
     vector<ColMeta> columns;
-    int rowCount=0;
+    //int rowCount=0;
     int columnCount;
     char name[tns];
     int payloadSize=0;

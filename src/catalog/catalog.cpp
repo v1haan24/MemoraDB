@@ -52,12 +52,12 @@ bool Catalog::createTable(TableMeta& table){
                 cns+
                 sizeof(DataType)+
                 sizeof(int)+
-                sizeof(int)+
+                //sizeof(int)+
                 sizeof(bool)); 
         writeBinary(file,table.metadataSize);
 
         file.write(table.name,tns);
-        writeBinary(file,table.rowCount);
+        //writeBinary(file,table.rowCount);
         writeBinary(file,table.payloadSize);
 
         writeBinary(file,table.columnCount);
@@ -80,7 +80,7 @@ TableMeta Catalog::readMetadata(const string& fileName){
         TableMeta temp;
         readBinary(file,temp.metadataSize);
         file.read(temp.name,tns);
-        readBinary(file,temp.rowCount);
+        //readBinary(file,temp.rowCount);
         readBinary(file,temp.payloadSize);
 
         readBinary(file,temp.columnCount);
