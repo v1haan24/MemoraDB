@@ -48,3 +48,10 @@ struct Record{
     bool deleted;
     Row row;
 };
+
+struct Difference{
+    uint64_t timestamp=0;
+    string column;
+    string before;
+    string after;
+};

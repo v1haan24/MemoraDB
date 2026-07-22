@@ -42,13 +42,13 @@ int main(){
 
     assert(table->update(u1)==true);
 
-    Row latest=table->latest("101");
+    Record latest=table->latest("101");
 
-    assert(latest.values[0]=="101");
-    assert(latest.values[1]=="Swayam");
-    assert(latest.values[2]=="IT");
-    assert(latest.values[3]=="9.500000");
-    assert(latest.values[4]=="false");
+    assert(latest.row.values[0]=="101");
+    assert(latest.row.values[1]=="Swayam");
+    assert(latest.row.values[2]=="IT");
+    assert(latest.row.values[3]=="9.500000");
+    assert(latest.row.values[4]=="false");
 
     // ---------- Update Again ----------
     Row u2={{"101","Swayam Jain","IT","9.90","true"}};
@@ -57,9 +57,9 @@ int main(){
 
     latest=table->latest("101");
 
-    assert(latest.values[1]=="Swayam Jain");
-    assert(latest.values[3]=="9.900000");
-    assert(latest.values[4]=="true");
+    assert(latest.row.values[1]=="Swayam Jain");
+    assert(latest.row.values[3]=="9.900000");
+    assert(latest.row.values[4]=="true");
 
     // ---------- Missing PK ----------
     Row missing={{"999","ABC","IT","8.00","true"}};
@@ -105,9 +105,9 @@ int main(){
     // ---------- Verify Previous Version Intact ----------
     latest=table->latest("101");
 
-    assert(latest.values[1]=="Swayam Jain");
-    assert(latest.values[3]=="9.900000");
-    assert(latest.values[4]=="true");
+    assert(latest.row.values[1]=="Swayam Jain");
+    assert(latest.row.values[3]=="9.900000");
+    assert(latest.row.values[4]=="true");
 
     // ---------- Update Other Row ----------
     Row u3={{"102","Darshan","CS","8.80","false"}};
@@ -116,10 +116,10 @@ int main(){
 
     latest=table->latest("102");
 
-    assert(latest.values[0]=="102");
-    assert(latest.values[1]=="Darshan");
-    assert(latest.values[3]=="8.800000");
-    assert(latest.values[4]=="false");
+    assert(latest.row.values[0]=="102");
+    assert(latest.row.values[1]=="Darshan");
+    assert(latest.row.values[3]=="8.800000");
+    assert(latest.row.values[4]=="false");
 
     // ---------- Duplicate Updates ----------
     assert(table->update(u3));
@@ -127,8 +127,8 @@ int main(){
 
     latest=table->latest("102");
 
-    assert(latest.values[3]=="8.800000");
-    assert(latest.values[4]=="false");
+    assert(latest.row.values[3]=="8.800000");
+    assert(latest.row.values[4]=="false");
 
     cout<<"\n====================================\n";
     cout<<"Update tests passed successfully!\n";

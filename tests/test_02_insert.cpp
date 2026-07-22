@@ -26,15 +26,15 @@ int main(){
     // Original row must still exist
     
 
-Row latest = table->latest("101");
+Record latest = table->latest("101");
 
-cout<<"Values size = "<<latest.values.size()<<'\n';
+cout<<"Values size = "<<latest.row.values.size()<<'\n';
 
-for(auto &x:latest.values)
+for(auto &x:latest.row.values)
     cout<<x<<" | ";
 
 cout<<'\n';
-    assert(latest.values[1]=="Swayam");
+    assert(latest.row.values[1]=="Swayam");
 
     // ---------- Invalid Integer ----------
     Row invalidPK={{"abc","Someone","IT","8.50","true"}};
@@ -75,7 +75,7 @@ cout<<'\n';
     assert(table->insert(emptyName)==true);
 
     latest=table->latest("110");
-    assert(latest.values[1]=="");
+    assert(latest.row.values[1]=="");
 
     // ---------- Boundary String ----------
     Row boundary={{
@@ -97,16 +97,16 @@ cout<<'\n';
 
     // ---------- Existing Data Intact ----------
     latest=table->latest("102");
-    assert(latest.values[0]=="102");
-    assert(latest.values[1]=="Darshan");
+    assert(latest.row.values[0]=="102");
+    assert(latest.row.values[1]=="Darshan");
 
     latest=table->latest("103");
-    assert(latest.values[0]=="103");
-    assert(latest.values[1]=="Vihaan");
+    assert(latest.row.values[0]=="103");
+    assert(latest.row.values[1]=="Vihaan");
 
     latest=table->latest("104");
-    assert(latest.values[0]=="104");
-    assert(latest.values[1]=="Reben");
+    assert(latest.row.values[0]=="104");
+    assert(latest.row.values[1]=="Reben");
 
     cout<<"\n====================================\n";
     cout<<"Insert tests passed successfully!\n";

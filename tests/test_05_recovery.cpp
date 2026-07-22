@@ -56,20 +56,20 @@ int main(){
     assert(table!=nullptr);
 
     // ---------- Latest After Recovery ----------
-    Row latest=table->latest("101");
+    Record latest=table->latest("101");
 
-    assert(latest.values[0]=="101");
-    assert(latest.values[1]=="Swayam");
-    assert(latest.values[2]=="IT");
-    assert(latest.values[3]=="9.500000");
-    assert(latest.values[4]=="false");
+    assert(latest.row.values[0]=="101");
+    assert(latest.row.values[1]=="Swayam");
+    assert(latest.row.values[2]=="IT");
+    assert(latest.row.values[3]=="9.500000");
+    assert(latest.row.values[4]=="false");
 
     latest=table->latest("102");
 
-    assert(latest.values[0]=="102");
-    assert(latest.values[1]=="Darshan");
-    assert(latest.values[3]=="8.800000");
-    assert(latest.values[4]=="true");
+    assert(latest.row.values[0]=="102");
+    assert(latest.row.values[1]=="Darshan");
+    assert(latest.row.values[3]=="8.800000");
+    assert(latest.row.values[4]=="true");
 
     // ---------- Deleted Row ----------
     assert(table->update({
@@ -92,13 +92,13 @@ int main(){
 
     latest=table->latest("104");
 
-    assert(latest.values[0]=="104");
-    assert(latest.values[1]=="Reben");
+    assert(latest.row.values[0]=="104");
+    assert(latest.row.values[1]=="Reben");
 
     latest=table->latest("105");
 
-    assert(latest.values[0]=="105");
-    assert(latest.values[1]=="Aryan");
+    assert(latest.row.values[0]=="105");
+    assert(latest.row.values[1]=="Aryan");
 
     cout<<"\n====================================\n";
     cout<<"Recovery tests passed successfully!\n";

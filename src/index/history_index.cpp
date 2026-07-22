@@ -13,10 +13,9 @@ int HistoryIndex::size(){ return history.size(); }
 const RecordVersion* HistoryIndex::latestBefore(const string& pk,uint64_t timestamp){
     auto it=history.find(pk);
     if(it==history.end()) return nullptr;
-
+    
     const vector<RecordVersion>& hist=it->second;
     const RecordVersion* ans=nullptr;
-    
     int l=0,r=hist.size()-1;
     while(l<=r){
         int mid=l+(r-l)/2;
@@ -24,9 +23,7 @@ const RecordVersion* HistoryIndex::latestBefore(const string& pk,uint64_t timest
             ans=&hist[mid];
             l=mid+1;
         }
-        else{
-            r=mid-1;
-        }
+        else r=mid-1;
     }
     return ans;
 }
@@ -39,14 +36,11 @@ int HistoryIndex::lowerBound(const string& pk,uint64_t timestamp){
     int l=0,r=hist.size()-1,ans=-1;
     while(l<=r){
         int mid=l+(r-l)/2;
-
         if(hist[mid].timestamp>=timestamp){
             ans=mid;
             r=mid-1;
         }
-        else{
-            l=mid+1;
-        }
+        else l=mid+1;
     }
     return ans;
 }

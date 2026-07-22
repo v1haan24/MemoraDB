@@ -54,18 +54,18 @@ int main(){
     assert(table->insert(r1)==false);
 
     // ---------- Other Rows Still Exist ----------
-    Row latest=table->latest("102");
+    Record latest=table->latest("102");
 
-    assert(latest.values[0]=="102");
-    assert(latest.values[1]=="Darshan");
-    assert(latest.values[2]=="CS");
-    assert(latest.values[3]=="7.700000");
-    assert(latest.values[4]=="true");
+    assert(latest.row.values[0]=="102");
+    assert(latest.row.values[1]=="Darshan");
+    assert(latest.row.values[2]=="CS");
+    assert(latest.row.values[3]=="7.700000");
+    assert(latest.row.values[4]=="true");
 
     latest=table->latest("103");
 
-    assert(latest.values[0]=="103");
-    assert(latest.values[1]=="Vihaan");
+    assert(latest.row.values[0]=="103");
+    assert(latest.row.values[1]=="Vihaan");
 
     // ---------- Delete Remaining ----------
     assert(table->deleteRow("102"));
