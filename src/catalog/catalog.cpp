@@ -46,14 +46,10 @@ bool Catalog::createTable(TableMeta& table){
         if(!file){cerr<<"Failed to create file for table '"<<table.name<<"'.\n"; return false;}
 
         table.columnCount=table.columns.size();
-        table.metadataSize=
-                sizeof(int)+tns+sizeof(int)+sizeof(int)+sizeof(int)+
-                table.columnCount*(
-                cns+
-                sizeof(DataType)+
-                sizeof(int)+
-                //sizeof(int)+
-                sizeof(bool)); 
+        table.metadataSize=file.tellp();
+            sizeof(int)+tns+sizeof(int)+sizeof(int)+
+            table.columnCount*(cns+sizeof(DataType)+sizeof(int)+sizeof(int)+sizeof(bool));
+            
         writeBinary(file,table.metadataSize);
 
         file.write(table.name,tns);
