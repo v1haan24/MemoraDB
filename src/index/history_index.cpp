@@ -10,6 +10,12 @@ const RecordVersion& HistoryIndex::latest(const string& pk){ return history.at(p
 
 int HistoryIndex::size(){ return history.size(); }
 
+vector<string> HistoryIndex::list(){
+    vector<string> ans;
+    for(const auto& v:history) ans.push_back(v.first);
+    return ans;
+}
+
 const RecordVersion* HistoryIndex::latestBefore(const string& pk,uint64_t timestamp){
     auto it=history.find(pk);
     if(it==history.end()) return nullptr;
@@ -42,11 +48,5 @@ int HistoryIndex::lowerBound(const string& pk,uint64_t timestamp){
         }
         else l=mid+1;
     }
-    return ans;
-}
-
-vector<string> HistoryIndex::list(){
-    vector<string> ans;
-    for(const auto& v:history) ans.push_back(v.first);
     return ans;
 }

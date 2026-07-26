@@ -1,3 +1,7 @@
 #.vscode/
 *.exe
 data/
+practice/
+docs/
+readme.md
+BW/

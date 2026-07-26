@@ -11,7 +11,7 @@ vector<Difference> compareRecords(const Record& r1,const Record& r2,const TableM
         ans.push_back(diff);
     }
     for(int i=0;i<meta.columnCount;i++){
-        if(r1.row.values[i]!=r2.row.values[i]) {
+        if(r1.row.values[i]!=r2.row.values[i]){
             Difference diff;
             diff.column=meta.columns[i].name;
             diff.before=r1.row.values[i];
@@ -24,13 +24,16 @@ vector<Difference> compareRecords(const Record& r1,const Record& r2,const TableM
 
 vector<Difference> Table::compare(const string& pk,uint64_t t1,uint64_t t2){
     Record r1=selectAsOf(pk,t1), r2=selectAsOf(pk,t2);
+    if(r1.row.values.empty() || r2.row.values.empty()) return {};
     return compareRecords(r1,r2,meta);
 }
 
 vector<Difference> Table::evolution(const string& pk,uint64_t t1,uint64_t t2){
     vector<Difference> ans;
+    if(!history.contains(pk)){ cerr<<"No row found.\n"; return {};}
     const vector<RecordVersion>& hist=history.getHistory(pk);
     int idx=history.lowerBound(pk,t1);
+    if(idx==-1) return ans;
     if(idx>0 && hist[idx].timestamp>t1) idx--;
     while(idx+1<hist.size() && hist[idx+1].timestamp<=t2){
         Record r1=readRecord(hist[idx].offset);

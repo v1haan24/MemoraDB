@@ -58,6 +58,6 @@ public:
     vector<Record> snapshot(uint64_t timestamp);
     vector<Difference> compare(const string& pk,uint64_t t1,uint64_t t2);
     vector<Difference> evolution(const string& pk,uint64_t t1,uint64_t t2);
-    bool rollback(const string& pk,uint64_t timestamp);
-    bool rollback(uint64_t timestamp);
+    bool rollback(const string& pk,uint64_t timestamp); //row roll-back
+    bool rollback(uint64_t timestamp); //table roll-back
 };
