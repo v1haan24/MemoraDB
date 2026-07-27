@@ -2,67 +2,46 @@
 
 ## Purpose
 
-Defines compile-time constants shared across the entire MemoraDB codebase.
+Defines compile-time constants used throughout MemoraDB.
 
-Keeping these values centralized ensures a consistent binary file format and avoids duplicated magic numbers.
+Keeping these values in one file ensures consistency across serialization, storage, and metadata handling.
 
 ---
 
 ## Constants
 
-### tns
+### cns
 
-Maximum number of bytes reserved for a table name.
+Maximum number of characters allowed in a column name.
 
-Used during metadata serialization.
+Used while serializing and deserializing table metadata.
 
 ---
 
-### cns
+### tns
 
-Maximum number of bytes reserved for a column name.
+Maximum number of characters allowed in a table name.
 
-Also used as the fixed storage size for metadata column names.
+Stored directly inside the metadata header.
 
 ---
 
 ### rhsz
 
-Record Header Size.
+Size of every record header.
 
-Represents the size of every record header stored on disk.
+Represents
 
-Contents:
+```
+Timestamp + Deleted Flag
+```
 
-- Timestamp
-- Deleted Flag
-
-Used for:
-
-- Recovery
-- Updates
-- Deletes
-- Temporal Queries
+Used whenever calculating payload offsets inside the database file.
 
 ---
 
-## Why constants?
+## Notes
 
-Using compile-time constants provides:
+Changing any of these values changes the binary layout of the database.
 
-- Consistent binary layout
-- Easier maintenance
-- Single point of modification
-- Reduced risk of serialization bugs
-
----
-
-## Used By
-
-- metadata.h
-- serialization.cpp
-- catalog.cpp
-- recovery.cpp
-- insert.cpp
-- update.cpp
-- delete.cpp
+Existing database files may become incompatible if these constants are modified.

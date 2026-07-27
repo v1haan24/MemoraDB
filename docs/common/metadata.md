@@ -2,30 +2,11 @@
 
 ## Purpose
 
-Defines the core data structures used throughout MemoraDB.
+Defines all shared data structures used throughout MemoraDB.
 
-These structures describe both the database schema and the runtime objects manipulated by the storage engine.
+These structures describe table schemas, rows, record versions, and helper serialization functions.
 
----
-
-## Enumerations
-
-### DataType
-
-Represents the supported column data types.
-
-Supported values:
-
-- INT
-- FLOAT
-- STRING
-- BOOL
-
-Used during:
-
-- Validation
-- Serialization
-- Deserialization
+Almost every module depends on this file.
 
 ---
 
@@ -33,138 +14,115 @@ Used during:
 
 ### ColMeta
 
-Represents the metadata of a single column.
+Represents metadata for a single column.
 
-Members:
+Stores:
 
-- name
-- type
-- size
-- offset
-- isPK
+- Column Name
+- Data Type
+- Storage Size
+- Payload Offset
+- Primary Key Flag
 
-Responsibilities:
-
-- Defines column layout
-- Stores fixed storage size
-- Stores byte offset inside a row payload
+The offset is calculated during table creation and allows direct access to any column inside a binary record.
 
 ---
 
 ### TableMeta
 
-Represents the metadata of an entire table.
+Represents the schema of an entire table.
 
-Members:
+Stores:
 
-- metadataSize
-- name
-- payloadSize
-- columnCount
-- columns
+- Table Name
+- Metadata Size
+- Payload Size
+- Number of Columns
+- List of Column Metadata
 
-Responsibilities:
-
-- Describes the complete table schema
-- Used during table creation
-- Used during recovery
-- Used during serialization/deserialization
+The metadata header is written once when a table is created and read back during crash recovery.
 
 ---
 
 ### Row
 
-Represents one logical database row.
+Represents a logical row.
 
-Members:
+Internally stores all values as strings.
 
-- values
-
-Responsibilities:
-
-- Stores user-visible data
-- Used by CRUD operations
-- Converted into binary payload during serialization
+These strings are validated and converted into binary values during serialization.
 
 ---
 
 ### Record
 
-Represents one physical version stored on disk.
+Represents one version of a row.
 
-Members:
+Contains:
 
-- timestamp
-- deleted
-- row
+- Row Data
+- Deleted Flag
+- Timestamp
 
-Responsibilities:
-
-- Stores immutable row versions
-- Enables temporal queries
-- Supports rollback and history
+Used by all temporal queries.
 
 ---
 
-### VersionPointer
+### RecordVersion
 
-Represents one entry inside the History Index.
+Represents an entry inside the History Index.
 
-Members:
+Stores only
 
-- timestamp
-- offset
+- Timestamp
+- File Offset
 
-Responsibilities:
+instead of storing the complete row.
 
-- Maps a record version to its location on disk
-- Enables O(1) latest lookups
-- Enables temporal reconstruction
+The actual row remains inside the append-only database file.
 
 ---
 
-### Difference
+## Serialization Helpers
 
-Represents a change between two record versions.
+### writeBinary()
 
-Members:
+Writes any trivially-copyable object directly into a binary stream.
 
-- timestamp
-- column
-- before
-- after
-
-Responsibilities:
-
-- Used by Compare()
-- Used by Evolution()
-- Displays field-level modifications between versions
+Used throughout metadata and record serialization.
 
 ---
 
-## Relationships
+### readBinary()
 
-```
-TableMeta
-│
-├── ColMeta
-│
-└── Row
-     │
-     ▼
-Record
-     │
-     ▼
-VersionPointer
-```
+Reads a binary object from a stream.
+
+Acts as the counterpart of writeBinary().
 
 ---
 
-## Used By
+### writeColumn()
 
-- Catalog
-- Table
-- History Index
-- Recovery
-- Temporal Engine
-- Serialization
+Serializes one column's metadata into the table header.
+
+Writes:
+
+- Name
+- Type
+- Size
+- Offset
+- Primary Key Flag
+
+---
+
+### readColumn()
+
+Reads a serialized column definition from the database file and reconstructs a ColMeta object.
+
+---
+
+## Notes
+
+This file defines the binary layout of the database.
+
+Any structural modification here changes the on-disk file format and requires updating the recovery logic.
