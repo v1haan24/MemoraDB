@@ -10,7 +10,7 @@ Keeping these values in one file ensures consistency across serialization, stora
 
 ## Constants
 
-### cns
+### cns 
 
 Maximum number of characters allowed in a column name.
 
