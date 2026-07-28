@@ -1,33 +1,50 @@
-  #include <iostream>
+#include <iostream>
 #include <fstream>
-#include <chrono>
+#include <vector>
 #include <string>
+#include <chrono>
 
 using namespace std;
 using namespace std::chrono;
 
-int main() {
-    int num_inserts = 100;  
-    string queue_filename = "outbox.queue";
-    
-    ofstream clear_file(queue_filename, ios::trunc);
+int main()
+{
+    int runs = 100;
+    string queue_file = "benchmark.queue";
+
+    string text = "natural language processing";
+
+    // Clear any old queue file before starting
+    ofstream clear_file(queue_file, ios::trunc);
     clear_file.close();
-    
-    cout << "[C++ Engine] Starting async inserts for " << num_inserts << " rows..." << endl;
-    
+
+    cout << "\n=========================================\n";
+    cout << "Starting Async C++ Benchmark (" << runs << " runs)\n";
+    cout << "=========================================\n\n";
+
+    // Start the C++ timer
     auto start = high_resolution_clock::now();
 
-    for (int i = 0; i < num_inserts; i++) {
-        ofstream queue_file(queue_filename, ios::app);
-        if (queue_file.is_open()) {
-            queue_file << "PK_" << i << "|This is a test document about networking and operating systems.\n";
-            queue_file.close(); 
+    // OPTIMIZATION 1: Open the file ONCE outside the loop
+    ofstream q_file(queue_file, ios::app);
+    if (q_file.is_open())
+    {
+        for (int i = 0; i < runs; i++)
+        {
+            q_file << text << "\n";
         }
+        // Close the file after all 100 writes are done
+        q_file.close();
     }
 
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<milliseconds>(stop - start);
-    
-    cout << "[C++ Engine] Successfully committed " << num_inserts << " rows to disk in " << duration.count() << " ms." << endl;
+    // Stop the C++ timer
+    auto end = high_resolution_clock::now();
+    double elapsed = duration<double, milli>(end - start).count();
+
+    cout << "----------- C++ Summary -----------\n";
+    cout << "Items Queued       : " << runs << "\n";
+    cout << "C++ Execution Time : " << elapsed << " ms\n";
+    cout << "Status             : C++ thread is free. Python is processing in background.\n\n";
+
     return 0;
 }
