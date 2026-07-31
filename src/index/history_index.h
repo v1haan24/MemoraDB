@@ -15,6 +15,5 @@ public:
     const RecordVersion& latest(const string& pk);
     int size();
     const RecordVersion* latestBefore(const string& pk,uint64_t timestamp);
-    int lowerBound(const string& pk,uint64_t timestamp);
     vector<string> list();
 };

@@ -4,129 +4,87 @@
 #include <chrono>
 #include <cstdio>
 #include "../src/catalog/catalog.h"
-
 using namespace std;
 
-int main(){
-
-    remove("data/Student.db");
-
-    Catalog catalog;
-
+Table* setupDatabase(Catalog& catalog,uint64_t& t1,uint64_t& t2,uint64_t& t3,uint64_t& t4){
     TableMeta student;
     strncpy(student.name,"Student",tns-1);
     student.name[tns-1]='\0';
-
     student.columns.push_back({"rollNo",INT,true});
     student.columns.push_back({"name",STRING,false,30});
     student.columns.push_back({"branch",STRING,false,10});
     student.columns.push_back({"cgpa",FLOAT,false});
     student.columns.push_back({"active",BOOL,false});
-
     assert(catalog.createTable(student));
-
     Table* table=catalog.getTable("Student");
     assert(table!=nullptr);
-
-    //------------------------------------------
-    // INSERT
-    //------------------------------------------
-
     assert(table->insert({{"101","Swayam","IT","8.0","true"}}));
-
-    uint64_t t1 = table->latest("101").timestamp;
-
+    t1=table->latest("101").timestamp;
     this_thread::sleep_for(chrono::milliseconds(5));
-
-    //------------------------------------------
-    // UPDATE 1
-    //------------------------------------------
-
     assert(table->update({{"101","Swayam","IT","8.5","true"}}));
-
-    uint64_t t2=table->latest("101").timestamp;
-
+    t2=table->latest("101").timestamp;
     this_thread::sleep_for(chrono::milliseconds(5));
-
-    //------------------------------------------
-    // UPDATE 2
-    //------------------------------------------
-
     assert(table->update({{"101","Swayam","CS","9.2","true"}}));
-
-    uint64_t t3=table->latest("101").timestamp;
-
+    t3=table->latest("101").timestamp;
     this_thread::sleep_for(chrono::milliseconds(5));
-
-    //------------------------------------------
-    // DELETE
-    //------------------------------------------
-
     assert(table->deleteRow("101"));
+    t4=table->latest("101").timestamp;
+    return table;
+}
 
-    uint64_t t4=table->latest("101").timestamp;
+void historyTest(Table* table){
+    cout<<"[1] History...\n";
+    auto history=table->showHistory("101");
+    assert(history.size()==4);
+    assert(history[0].row.values[2]=="IT");
+    assert(history[1].row.values[3]=="8.500000");
+    assert(history[2].row.values[2]=="CS");
+    assert(history[3].deleted);
+}
 
-    //------------------------------------------
-    // SHOW HISTORY
-    //------------------------------------------
+void asOfTest(Table* table,uint64_t t1,uint64_t t2,uint64_t t3){
+    cout<<"[2] AS OF query...\n";
+    Record record=table->selectAsOf("101",t1);
+    assert(record.row.values[3]=="8.000000");
+    record=table->selectAsOf("101",t2);
+    assert(record.row.values[3]=="8.500000");
+    record=table->selectAsOf("101",t3);
+    assert(record.row.values[2]=="CS");
+}
 
-    auto hist=table->showHistory("101");
+void betweenTest(Table* table,uint64_t t2,uint64_t t4){
+    cout<<"[3] BETWEEN query...\n";
+    auto records=table->selectBetween("101",t2,t4);
+    assert(records.size()==3);
+    assert(records[0].row.values[3]=="8.500000");
+    assert(records[1].row.values[2]=="CS");
+    assert(records[2].deleted);
+}
 
-    assert(hist.size()==4);
+void snapshotTest(Table* table,uint64_t t1,uint64_t t3,uint64_t t4){
+    cout<<"[4] Snapshot...\n";
+    auto snapshot=table->snapshot(t1);
+    assert(snapshot.size()==1);
+    assert(snapshot[0].row.values[3]=="8.000000");
+    snapshot=table->snapshot(t3);
+    assert(snapshot.size()==1);
+    assert(snapshot[0].row.values[2]=="CS");
+    snapshot=table->snapshot(t4);
+    assert(snapshot.empty());
+}
 
-    assert(hist[0].row.values[2]=="IT");
-    assert(hist[1].row.values[3]=="8.500000");
-    assert(hist[2].row.values[2]=="CS");
-    assert(hist[3].deleted==true);
-
-    //------------------------------------------
-    // SELECT AS OF
-    //------------------------------------------
-
-    auto r1=table->selectAsOf("101",t1);
-    assert(r1.row.values[3]=="8.000000");
-
-    auto r2=table->selectAsOf("101",t2);
-    assert(r2.row.values[3]=="8.500000");
-
-    auto r3=table->selectAsOf("101",t3);
-    assert(r3.row.values[2]=="CS");
-
-    //------------------------------------------
-    // BETWEEN
-    //------------------------------------------
-
-    auto between=table->selectBetween("101",t2,t4);
-
-    assert(between.size()==3);
-
-    assert(between[0].row.values[3]=="8.500000");
-    assert(between[1].row.values[2]=="CS");
-    assert(between[2].deleted);
-
-    //------------------------------------------
-    // SNAPSHOT
-    //------------------------------------------
-
-    auto snap1=table->snapshot(t1);
-
-    assert(snap1.size()==1);
-    assert(snap1[0].row.values[3]=="8.000000");
-
-    auto snap2=table->snapshot(t3);
-
-    assert(snap2.size()==1);
-    assert(snap2[0].row.values[2]=="CS");
-
-    auto snap3=table->snapshot(t4);
-
-    assert(snap3.empty());
-
-    //------------------------------------------
-
-    cout<<"\n====================================\n";
-    cout<<"Temporal tests passed successfully!\n";
-    cout<<"====================================\n";
-
+int main(){
+    cout<<"\n========= Temporal Tests =========\n\n";
+    remove("data/Student.db");
+    Catalog catalog;
+    uint64_t t1,t2,t3,t4;
+    Table* table=setupDatabase(catalog,t1,t2,t3,t4);
+    historyTest(table);
+    asOfTest(table,t1,t2,t3);
+    betweenTest(table,t2,t4);
+    snapshotTest(table,t1,t3,t4);
+    cout<<"\n==================================\n";
+    cout<<"All temporal tests passed.\n";
+    cout<<"==================================\n";
     return 0;
 }

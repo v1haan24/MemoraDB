@@ -6,7 +6,7 @@ bool isBool(const string& s){
 }
 
 bool isString(const string& s,int maxSize){
-    return s.length()<=maxSize;
+    return s.length()<maxSize;
 }
 
 bool isInt(const string& s){

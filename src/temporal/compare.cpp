@@ -32,9 +32,11 @@ vector<Difference> Table::evolution(const string& pk,uint64_t t1,uint64_t t2){
     vector<Difference> ans;
     if(!history.contains(pk)){ cerr<<"No row found.\n"; return {};}
     const vector<RecordVersion>& hist=history.getHistory(pk);
-    int idx=history.lowerBound(pk,t1);
-    if(idx==-1) return ans;
-    if(idx>0 && hist[idx].timestamp>t1) idx--;
+    const RecordVersion* start=history.latestBefore(pk, t1);
+    if(start==nullptr) return ans;
+    int idx=0;
+    while(idx<hist.size() && hist[idx].timestamp!=start->timestamp) idx++;
+
     while(idx+1<hist.size() && hist[idx+1].timestamp<=t2){
         Record r1=readRecord(hist[idx].offset);
         Record r2=readRecord(hist[idx+1].offset);

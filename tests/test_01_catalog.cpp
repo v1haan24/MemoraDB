@@ -5,10 +5,7 @@
 #include "../src/catalog/catalog.h"
 using namespace std;
 
-int main(){
-    remove("data/Student.db");
-    Catalog catalog;
-    TableMeta student;
+void setupStudentMeta(TableMeta& student){
     strncpy(student.name,"Student",tns-1);
     student.name[tns-1]='\0';
     student.columns.push_back({"rollNo",INT,true});
@@ -16,45 +13,84 @@ int main(){
     student.columns.push_back({"branch",STRING,false,10});
     student.columns.push_back({"cgpa",FLOAT,false});
     student.columns.push_back({"active",BOOL,false});
-    assert(catalog.createTable(student)==true); //create
-    assert(catalog.createTable(student)==false); //dup
-    ifstream check("data/Student.db",ios::binary); //file create
-    assert(check.good());
-    check.close();
-    Table* table=catalog.getTable("Student"); //gettable
-    assert(table!=nullptr);
+}
+
+void createTableTest(Catalog& catalog,TableMeta& student){
+    cout<<"[1] Creating table...\n";
+    assert(catalog.createTable(student));
+    assert(catalog.getTable("Student")!=nullptr);
+    ifstream db("data/Student.db",ios::binary);
+    assert(db.good());
+}
+
+void duplicateTableTest(Catalog& catalog,TableMeta& student){
+    cout<<"[2] Duplicate table detection...\n";
+    assert(!catalog.createTable(student));
+}
+
+void getTableTest(Catalog& catalog){
+    cout<<"[3] Table lookup...\n";
+    assert(catalog.getTable("Student")!=nullptr);
     assert(catalog.getTable("Dummy")==nullptr);
     assert(catalog.getTable("")==nullptr);
+}
 
-    const TableMeta& meta=table->getMeta(); //metdadata
+void metadataTest(Catalog& catalog){
+    cout<<"[4] Metadata verification...\n";
+    Table* table=catalog.getTable("Student");
+    assert(table!=nullptr);
+    const TableMeta& meta=table->getMeta();
     assert(strcmp(meta.name,"Student")==0);
     assert(meta.columnCount==5);
-    assert(meta.columns[0].type==INT);
-    assert(meta.columns[0].isPK==true);
-    assert(meta.columns[1].type==STRING);
-    assert(meta.columns[1].size==30);
-    assert(meta.columns[2].type==STRING);
-    assert(meta.columns[2].size==10);
-    assert(meta.columns[3].type==FLOAT);
-    assert(meta.columns[4].type==BOOL);
-    assert(meta.columns[0].offset==0); //offsets
-    assert(meta.columns[1].offset==4);
-    assert(meta.columns[2].offset==34);
-    assert(meta.columns[3].offset==44);
-    assert(meta.columns[4].offset==48);
     assert(meta.payloadSize==49);
+    const auto& cols=meta.columns;
+    assert(cols[0].type==INT);
+    assert(cols[0].isPK);
+    assert(cols[1].type==STRING);
+    assert(cols[1].size==30);
+    assert(cols[2].type==STRING);
+    assert(cols[2].size==10);
+    assert(cols[3].type==FLOAT);
+    assert(cols[4].type==BOOL);
+    assert(cols[0].offset==0);
+    assert(cols[1].offset==4);
+    assert(cols[2].offset==34);
+    assert(cols[3].offset==44);
+    assert(cols[4].offset==48);
+}
 
-    Catalog restarted; //restart
-    Table* table2=restarted.getTable("Student");
-    assert(table2!=nullptr);
+void recoveryTest(){
+    cout<<"[5] Catalog recovery...\n";
+    Catalog restarted;
+    Table* table=restarted.getTable("Student");
+    assert(table!=nullptr);
+    const TableMeta& meta=table->getMeta();
+    assert(strcmp(meta.name,"Student")==0);
+    assert(meta.columnCount==5);
+    assert(meta.payloadSize==49);
     assert(restarted.getTable("Dummy")==nullptr);
     assert(restarted.getTable("")==nullptr);
-    const TableMeta& meta2=table2->getMeta();
-    assert(strcmp(meta2.name,"Student")==0);
-    assert(meta2.columnCount==5);
-    assert(meta2.payloadSize==49);
-    assert(restarted.createTable(student)==false); //dup
+}
 
-    cout<<"Catalog tests passed successfully!\n";
+int main(){
+    remove("data/Student.db");
+
+    cout<<"\n========== Catalog Tests ==========\n\n";
+
+    Catalog catalog;
+
+    TableMeta student;
+    setupStudentMeta(student);
+
+    createTableTest(catalog,student);
+    duplicateTableTest(catalog,student);
+    getTableTest(catalog);
+    metadataTest(catalog);
+    recoveryTest();
+
+    cout<<"\n===================================\n";
+    cout<<"All catalog tests passed.\n";
+    cout<<"===================================\n";
+
     return 0;
 }
