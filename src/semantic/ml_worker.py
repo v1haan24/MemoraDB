@@ -1,74 +1,59 @@
-import sys
 import time
 import os
 from sentence_transformers import SentenceTransformer
 
-# Dynamic Model Selection
-MODEL_NAME = sys.argv[1] if len(sys.argv) > 1 else 'sentence-transformers/all-MiniLM-L6-v2'
-QUEUE_FILE = "benchmark.queue"
+print("========================================")
+print("  MemoraDB Python ML Worker Initializing ")
+print("========================================")
 
-print(f"Loading model: {MODEL_NAME}")
+start_load = time.time()
+model = SentenceTransformer('all-MiniLM-L6-v2')
+load_time = (time.time() - start_load) * 1000
+print(f"✅ Model loaded in {load_time:.2f} ms")
 
-# OPTIMIZATION 2: High-precision timer for load time
-t0 = time.perf_counter()
-model = SentenceTransformer(MODEL_NAME)
-t1 = time.perf_counter()
-load_time = (t1 - t0) * 1000.0
-print(f"Model loaded in {load_time:.2f} ms\n")
-
-# OPTIMIZATION 3: The Warm-up
-print("Warming up model to absorb PyTorch initialization penalty...")
+# Warmup to absorb PyTorch cold-start latency
+print("🔥 Warming up model (5 iterations)...")
 for _ in range(5):
-     _ = model.encode("Warmup")
-print("Warmup complete. Waiting for C++ to send data...\n")
+    _ = model.encode("natural language processing")
+print("✅ Warmup complete. Worker active and listening...\n")
 
-if os.path.exists(QUEUE_FILE): 
-    os.remove(QUEUE_FILE)
+queue_file = "tasks.queue"
+vec_file = "embeddings.vec"
 
 while True:
-    if not os.path.exists(QUEUE_FILE):
-        time.sleep(0.001)
-        continue
+    if os.path.exists(queue_file):
+        # 1. Read queue
+        try:
+            with open(queue_file, "r") as f:
+                lines = [line.strip() for line in f.readlines() if line.strip()]
+            
+            # Immediately clear queue file
+            os.remove(queue_file)
+        except Exception:
+            continue
         
-    # Read the queue
-    with open(QUEUE_FILE, "r") as f:
-        lines = f.readlines()
+        if not lines:
+            continue
+            
+        runs = len(lines)
+        print(f"📥 Received {runs} queries from C++ Engine...")
         
-    if not lines:
-        time.sleep(0.001)
-        continue
-
-    total_time = 0.0
-    min_time = float('inf')
-    max_time = 0.0
-    dimension = 0
-    runs = len(lines)
-
-    for i, line in enumerate(lines):
-        text = line.strip()
-        if not text: continue
-
-        # OPTIMIZATION 4: High-precision timer for the math
-        start = time.perf_counter()
-        embedding = model.encode(text)
-        end = time.perf_counter()
-
-        elapsed = (end - start) * 1000.0
-        total_time += elapsed
-        min_time = min(min_time, elapsed)
-        max_time = max(max_time, elapsed)
-        dimension = len(embedding)
-
-        print(f"Run {i + 1:3} : {elapsed:.2f} ms")
-
-    # Clean up queue file
-    os.remove(QUEUE_FILE)
-
-    print("\n----------- Summary -----------")
-    print(f"Model            : {MODEL_NAME}")
-    print(f"Dimension        : {dimension}")
-    print(f"Total time       : {total_time:.2f} ms for {runs} items")
-    print(f"Average Time     : {total_time / runs:.2f} ms")
-    print(f"Minimum Time     : {min_time:.2f} ms")
-    print(f"Maximum Time     : {max_time:.2f} ms")
-    print(f"Model Load Time  : {load_time:.2f} ms\n")
+        start_ml = time.time()
+        
+        # 2. Generate 384-dim float32 embeddings
+        embeddings = model.encode(lines)
+        
+        # 3. Write raw binary bytes DIRECTLY to embeddings.vec (No atomic swap)
+        with open(vec_file, "wb") as f:
+            f.write(embeddings.tobytes())
+            
+        total_ml_time = (time.time() - start_ml) * 1000
+        avg_time = total_ml_time / runs
+        
+        print("-------------- Python Benchmark Summary --------------")
+        print(f"  Batch Size                : {runs} items")
+        print(f"  ML Encoding + Binary Write: {total_ml_time:.2f} ms")
+        print(f"  Avg Latency Per Vector   : {avg_time:.2f} ms")
+        print("------------------------------------------------------\n")
+    
+    time.sleep(0.005) # 5ms polling loop
