@@ -1,6 +1,6 @@
 bench/
-build/
-docs/
-practice/
+
 cmd.txt
 *.exe
+build/
+practice/
