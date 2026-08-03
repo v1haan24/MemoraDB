@@ -1,9 +1,9 @@
 #include "../storage/table.h"
-using namespace std;
 
-vector<Record> Table::snapshot(uint64_t timestamp){
-    vector<Record> ans;
-    const vector<string> keys=history.list();
+
+std::vector<Record> Table::snapshot(uint64_t timestamp){
+    std::vector<Record> ans;
+    const std::vector<std::string> keys=history.list();
     ans.reserve(keys.size());
 
     for(const auto& pk:keys){

@@ -1,12 +1,10 @@
 #include "catalog.h"
 #include <iostream>
-#include <fstream>
 #include <filesystem>
 #include <cstring>
 #include "../storage/table.h"
-using namespace std;
 
-bool Catalog::exist(const string& tableName){
+bool Catalog::exist(const std::string& tableName){
     return tables.count(tableName);
 }
 
@@ -20,30 +18,30 @@ void Catalog::CalcOffset(TableMeta& table){
 }
 
 bool Catalog::createTable(TableMeta& table){
-        if(strnlen(table.name,tns)>=tns){cerr<<"Table name exceeds "<<tns-1<<" characters.\n"; return false;}
-        if(table.columns.empty()){cerr<<"Table must contain at least one column.\n"; return false;}
+        if(strnlen(table.name,tns)>=tns){std::cerr<<"Table name exceeds "<<tns-1<<" characters.\n"; return false;}
+        if(table.columns.empty()){std::cerr<<"Table must contain at least one column.\n"; return false;}
         for(int i=0;i<table.columns.size();i++){
             for(int j=i+1;j<table.columns.size();j++){
                 if(strcmp(table.columns[i].name,table.columns[j].name)==0){
-                    cerr<<"Duplicate column name: "<<table.columns[i].name<<"\n";
+                    std::cerr<<"Duplicate column name: "<<table.columns[i].name<<"\n";
                     return false;
                 }
             }
         }
         int pkCount=0;
         for(const auto& col:table.columns){
-            if(strnlen(col.name,cns)>=cns){cerr<<"Column name '"<<col.name<<"' exceeds "<<cns-1<<" characters.\n";return false;}
-            if(col.type==STRING && col.size<=0){cerr<<"Invalid size for STRING column '"<<col.name<<"'.\n";return false;}
+            if(strnlen(col.name,cns)>=cns){std::cerr<<"Column name '"<<col.name<<"' exceeds "<<cns-1<<" characters.\n";return false;}
+            if(col.type==STRING && col.size<=0){std::cerr<<"Invalid size for STRING column '"<<col.name<<"'.\n";return false;}
             if(col.isPK) pkCount++;
         }
-        if(pkCount!=1){cerr<<"Exactly one primary key is required.\n";return false;}
-        if(exist(table.name)){cerr<<"Table '"<<table.name<<"' already exists.\n"; return false;}
+        if(pkCount!=1){std::cerr<<"Exactly one primary key is required.\n";return false;}
+        if(exist(table.name)){std::cerr<<"Table '"<<table.name<<"' already exists.\n"; return false;}
         
         CalcOffset(table);
-        if(table.payloadSize==0){cerr<<"Payload size cannot be zero.\n"; return false;}
+        if(table.payloadSize==0){std::cerr<<"Payload size cannot be zero.\n"; return false;}
 
-        ofstream file("data/"+string(table.name)+".db",ios::binary);
-        if(!file){cerr<<"Failed to create file for table '"<<table.name<<"'.\n"; return false;}
+        std::ofstream file("data/"+std::string(table.name)+".db",std::ios::binary);
+        if(!file){std::cerr<<"Failed to create file for table '"<<table.name<<"'.\n"; return false;}
 
         table.columnCount=table.columns.size();
         table.metadataSize=
@@ -59,20 +57,20 @@ bool Catalog::createTable(TableMeta& table){
         writeBinary(file,table.columnCount);
         for(const auto& col:table.columns) writeColumn(file,col);
         
-        tables.emplace(table.name,Table(table));
+        tables.emplace(std::string(table.name),std::move(Table(table)));
         file.close();
         return true;
 }
 
-Table* Catalog::getTable(const string& tableName){
+Table* Catalog::getTable(const std::string& tableName){
         auto it=tables.find(tableName);
         if(it==tables.end()) return nullptr;
         return &it->second;
 }
 
-TableMeta Catalog::readMetadata(const string& fileName){
-        ifstream file("data/"+fileName,ios::binary);
-        if(!file){cerr<<"Unable to open metadata file "<<fileName<<"\n"; return {}; }
+TableMeta Catalog::readMetadata(const std::string& fileName){
+        std::ifstream file("data/"+fileName,std::ios::binary);
+        if(!file){std::cerr<<"Unable to open metadata file "<<fileName<<"\n"; return {}; }
         TableMeta temp;
         readBinary(file,temp.metadataSize);
         file.read(temp.name,tns);
@@ -90,8 +88,8 @@ TableMeta Catalog::readMetadata(const string& fileName){
 
 void Catalog::loadTables(){
     tables.clear();
-    if(!filesystem::exists("data")) return;
-    for(const auto& entry:filesystem::directory_iterator("data")){
+    if(!std::filesystem::exists("data")) return;
+    for(const auto& entry:std::filesystem::directory_iterator("data")){
             if(entry.path().extension()!=".db") continue;
             TableMeta meta=readMetadata(entry.path().filename().string());
             if(meta.name[0]=='\0') continue;
@@ -101,8 +99,8 @@ void Catalog::loadTables(){
 
 void Catalog::showTables(){
     if(tables.empty()){
-        cout<<"No tables found.\n";
+        std::cout<<"No tables found.\n";
         return;
     }
-    for(auto &t:tables) cout<<t.first<<'\n';
+    for(auto &t:tables) std::cout<<t.first<<'\n';
 }

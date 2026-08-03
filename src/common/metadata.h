@@ -5,7 +5,6 @@
 #include "constants.h"
 #include <cstring>
 #include <cstdint>
-using namespace std;
 
 struct ColMeta{
     char name[cns];
@@ -14,7 +13,7 @@ struct ColMeta{
     int size;
     int offset=0;
     ColMeta()=default;
-    ColMeta(string n,DataType t,bool pk,int s=0){
+    ColMeta(std::string n,DataType t,bool pk,int s=0){
         strncpy(name,n.c_str(),cns-1);
         name[cns-1]='\0';
         type=t;isPK=pk;
@@ -27,7 +26,7 @@ struct ColMeta{
 
 struct TableMeta{
     int metadataSize;
-    vector<ColMeta> columns;
+    std::vector<ColMeta> columns;
     //int rowCount=0;
     int columnCount;
     char name[tns];
@@ -40,7 +39,7 @@ struct RecordVersion{
 };
 
 struct Row{
-    vector<string> values; //assuming parser gives string as output
+    std::vector<std::string> values; //assuming parser gives string as output
 };
 
 struct Record{
@@ -51,7 +50,7 @@ struct Record{
 
 struct Difference{
     uint64_t timestamp=0;
-    string column;
-    string before;
-    string after;
+    std::string column;
+    std::string before;
+    std::string after;
 };

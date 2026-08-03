@@ -1,56 +1,50 @@
 #include "table.h"
 #include <iostream>
-#include <fstream>
-#include <ctime>
-using namespace std;
 
 void print(const Row& row){
     for(int i=0;i<row.values.size();i++){
-        cout<<row.values[i];
-        if(i+1!=row.values.size()) cout<<" | ";
+        std::cout<<row.values[i];
+        if(i+1!=row.values.size()) std::cout<<" | ";
     }
-    cout<<'\n';
+    std::cout<<'\n';
 }
 void print(const Record& record){
-    cout<<"Timestamp : "<<record.timestamp<<'\n';
-    cout<<"Deleted  : "<<(record.deleted?"true":"false")<<'\n';
-    cout<<"Row:"<<'\n';
+    std::cout<<"Timestamp : "<<record.timestamp<<'\n';
+    std::cout<<"Deleted  : "<<(record.deleted?"true":"false")<<'\n';
+    std::cout<<"Row:"<<'\n';
     print(record.row);
 }
-void print(const vector<Row>& rows){
-    if(rows.empty()){cout<<"No rows found.\n"; return;}
-    for(const auto& row:rows){print(row); cout<<'\n';}
+void print(const std::vector<Row>& rows){
+    if(rows.empty()){std::cout<<"No rows found.\n"; return;}
+    for(const auto& row:rows){print(row); std::cout<<'\n';}
 }
-void print(const vector<Record>& records){
-    if(records.empty()){cout<<"No records found.\n";return;}
-    for(const auto& record:records){print(record); cout<<'\n';}
+void print(const std::vector<Record>& records){
+    if(records.empty()){std::cout<<"No records found.\n";return;}
+    for(const auto& record:records){print(record); std::cout<<'\n';}
 }
 void print(const Difference& diff){
     if(diff.timestamp!=0)
-    cout<<"Timestamp : "<<diff.timestamp<<'\n';
-    cout<<"Column    : "<<diff.column<<'\n';
-    cout<<"Before    : "<<diff.before<<'\n';
-    cout<<"After     : "<<diff.after<<'\n';
+    std::cout<<"Timestamp : "<<diff.timestamp<<'\n';
+    std::cout<<"Column    : "<<diff.column<<'\n';
+    std::cout<<"Before    : "<<diff.before<<'\n';
+    std::cout<<"After     : "<<diff.after<<'\n';
 }
-void print(const vector<Difference>& diffs){
-    if(diffs.empty()){cout<<"No differences found.\n";return;}
-    for(const auto& diff:diffs){ print(diff);cout<<'\n';}
+void print(const std::vector<Difference>& diffs){
+    if(diffs.empty()){std::cout<<"No differences found.\n";return;}
+    for(const auto& diff:diffs){ print(diff);std::cout<<'\n';}
 }
 
 
 void Table::printDatabase(){
-    fstream file("data/"+string(meta.name)+".db",ios::binary|ios::in);
-    if(!file){
-        cerr<<"Failed to open table '"<<meta.name<<"'.\n";
-        return;
-    }
-
+    file.clear();
+    file.seekg(0,std::ios::beg);
+    
     TableMeta temp;
     readBinary(file,temp.metadataSize);
     file.read(temp.name,tns);
-    //readBinary(file,temp.rowCount);
     readBinary(file,temp.payloadSize);
     readBinary(file,temp.columnCount);
+    if(!file){ std::cerr<<"Failed to read table metadata.\n"; return;}
 
     for(int i=0;i<temp.columnCount;i++){
         ColMeta col;
@@ -58,15 +52,14 @@ void Table::printDatabase(){
         temp.columns.push_back(col);
     }
 
-    cout<<"Table : "<<temp.name<<'\n';
-    //cout<<"Rows : "<<temp.rowCount<<'\n';
-    cout<<"Columns : "<<temp.columnCount<<'\n';
-    cout<<"Payload Size : "<<temp.payloadSize<<'\n';
-    cout<<"Metadata Size : "<<temp.metadataSize<<"\n\n";
+    std::cout<<"Table : "<<temp.name<<'\n';
+    std::cout<<"Columns : "<<temp.columnCount<<'\n';
+    std::cout<<"Payload Size : "<<temp.payloadSize<<'\n';
+    std::cout<<"Metadata Size : "<<temp.metadataSize<<"\n\n";
 
-    cout<<"Columns\n";
+    std::cout<<"Columns\n";
     for(const auto& col:temp.columns){
-        cout<<"  "<<col.name
+        std::cout<<"  "<<col.name
             <<" | "
             <<(col.type==INT?"INT":
                col.type==FLOAT?"FLOAT":
@@ -77,21 +70,20 @@ void Table::printDatabase(){
             <<'\n';
     }
 
-    cout<<"\nRecords\n";
+    std::cout<<"\nRecords\n";
 
     while(true){
-        uint64_t offset=file.tellg();
-
+        uint64_t offset=static_cast<uint64_t>(file.tellg());
         Record record;
         readBinary(file,record.timestamp);
         if(!file) break;
-
         readBinary(file,record.deleted);
+        if(!file){ std::cerr<<"Corrupted record.\n"; break;}
         record.row=readPayload(file,temp);
-
-        cout<<"\nOffset : "<<offset<<'\n';
+        if(!file){ std::cerr<<"Corrupted record payload.\n"; break;}
+        std::cout<<"\nOffset : "<<offset<<'\n';
         print(record);
     }
 
-    file.close();
+    
 }

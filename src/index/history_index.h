@@ -3,17 +3,16 @@
 #include <vector>
 #include <string>
 #include "../common/metadata.h"
-using namespace std;
 
 class HistoryIndex{
 private:
-    unordered_map<string,vector<RecordVersion>> history;
+    std::unordered_map<std::string,std::vector<RecordVersion>> history;
 public:
-    bool contains(const string& pk);
-    void addVersion(const string& pk,const RecordVersion& version);
-    vector<RecordVersion>& getHistory(const string& pk);
-    const RecordVersion& latest(const string& pk);
+    bool contains(const std::string& pk);
+    void addVersion(const std::string& pk,const RecordVersion& version);
+    const std::vector<RecordVersion>& getHistory(const std::string& pk);
+    const RecordVersion& latest(const std::string& pk);
     int size();
-    const RecordVersion* latestBefore(const string& pk,uint64_t timestamp);
-    vector<string> list();
+    const RecordVersion* latestBefore(const std::string& pk,uint64_t timestamp);
+    std::vector<std::string> list();
 };

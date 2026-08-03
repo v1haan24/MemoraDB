@@ -1,9 +1,8 @@
 #include "table.h"
 #include <chrono>
 #include <cstring>
-#include <fstream>
 
-void writeColumn(ostream& file,const ColMeta& col){
+void writeColumn(std::ostream& file,const ColMeta& col){
     file.write(col.name,cns);
     writeBinary(file,col.type);
     writeBinary(file,col.size);
@@ -11,7 +10,7 @@ void writeColumn(ostream& file,const ColMeta& col){
     writeBinary(file,col.isPK);
 }
 
-void readColumn(istream& file,ColMeta& col){
+void readColumn(std::istream& file,ColMeta& col){
     file.read(col.name,cns);
     readBinary(file,col.type);
     readBinary(file,col.size);
@@ -19,17 +18,17 @@ void readColumn(istream& file,ColMeta& col){
     readBinary(file,col.isPK);
 }
 
-uint64_t writeHeader(fstream& file,bool deleted){
+uint64_t writeHeader(std::fstream& file,bool deleted){
     uint64_t timestamp =
-        chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now().time_since_epoch()
-        ).count();
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()
+    ).count();
     writeBinary(file,timestamp);
     writeBinary(file,deleted);
     return timestamp;
 }
 
-void writePayload(fstream& file,const TableMeta& meta,const Row& row){
+void writePayload(std::fstream& file,const TableMeta& meta,const Row& row){
     char temp[cns]={};
     for(int i=0;i<meta.columnCount;i++){
         if(meta.columns[i].type==INT){
@@ -54,18 +53,18 @@ void writePayload(fstream& file,const TableMeta& meta,const Row& row){
     }
 }
 
-Row readPayload(fstream& file,const TableMeta& meta){
+Row readPayload(std::fstream& file,const TableMeta& meta){
     Row row;
     for(int i=0;i<meta.columnCount;i++){
         if(meta.columns[i].type==INT){
             int x;
             readBinary(file,x);
-            row.values.push_back(to_string(x));
+            row.values.push_back(std::to_string(x));
         }
         else if(meta.columns[i].type==FLOAT){
             float x;
             readBinary(file,x);
-            row.values.push_back(to_string(x));
+            row.values.push_back(std::to_string(x));
         }
         else if(meta.columns[i].type==BOOL){
             bool x;
@@ -74,7 +73,7 @@ Row readPayload(fstream& file,const TableMeta& meta){
 
         }
         else if(meta.columns[i].type==STRING){
-            string temp(meta.columns[i].size,'\0');
+            std::string temp(meta.columns[i].size,'\0');
             file.read(&temp[0], meta.columns[i].size);
             temp.resize(strnlen(temp.c_str(),meta.columns[i].size));
             row.values.push_back(temp);

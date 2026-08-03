@@ -1,5 +1,7 @@
+bench/
 build/
 data/
+docs/
 practice/
-BW/
+cmd.txt
 *.exe
