@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include "../src/catalog/catalog.h"
 using namespace std;
@@ -19,7 +20,7 @@ void createTableTest(Catalog& catalog,TableMeta& student){
     cout<<"[1] Creating table...\n";
     assert(catalog.createTable(student));
     assert(catalog.getTable("Student")!=nullptr);
-    ifstream db("data/Student.db",ios::binary);
+    ifstream db("data/Student/data.db",ios::binary);
     assert(db.good());
 }
 
@@ -73,7 +74,7 @@ void recoveryTest(){
 }
 
 int main(){
-    remove("data/Student.db");
+    filesystem::remove_all("data/Student");
 
     cout<<"\n========== Catalog Tests ==========\n\n";
 

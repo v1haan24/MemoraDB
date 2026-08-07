@@ -40,8 +40,14 @@ bool Catalog::createTable(TableMeta& table){
         CalcOffset(table);
         if(table.payloadSize==0){std::cerr<<"Payload size cannot be zero.\n"; return false;}
 
-        std::ofstream file("data/"+std::string(table.name)+".db",std::ios::binary);
-        if(!file){std::cerr<<"Failed to create file for table '"<<table.name<<"'.\n"; return false;}
+        std::filesystem::path tablePath="data/"+std::string(table.name);
+        std::filesystem::create_directories(tablePath/"archive");
+        std::ofstream file(tablePath/"data.db",std::ios::binary);
+        if(!file){
+            std::cerr<<"Failed to create file for table '"<<table.name<<"'.\n";
+            std::filesystem::remove_all(tablePath);
+            return false;
+        }
 
         table.columnCount=table.columns.size();
         table.metadataSize=
@@ -51,12 +57,16 @@ bool Catalog::createTable(TableMeta& table){
         writeBinary(file,table.metadataSize);
 
         file.write(table.name,tns);
-        //writeBinary(file,table.rowCount);
         writeBinary(file,table.payloadSize);
 
         writeBinary(file,table.columnCount);
         for(const auto& col:table.columns) writeColumn(file,col);
-        
+        if(!file){
+            std::cerr<<"Failed to write metadata for table '"<<table.name<<"'.\n";
+            file.close();
+            std::filesystem::remove_all(tablePath);
+            return false;
+        }
         tables.emplace(std::string(table.name),std::move(Table(table)));
         file.close();
         return true;
@@ -69,12 +79,11 @@ Table* Catalog::getTable(const std::string& tableName){
 }
 
 TableMeta Catalog::readMetadata(const std::string& fileName){
-        std::ifstream file("data/"+fileName,std::ios::binary);
+        std::ifstream file(fileName,std::ios::binary);
         if(!file){std::cerr<<"Unable to open metadata file "<<fileName<<"\n"; return {}; }
         TableMeta temp;
         readBinary(file,temp.metadataSize);
         file.read(temp.name,tns);
-        //readBinary(file,temp.rowCount);
         readBinary(file,temp.payloadSize);
 
         readBinary(file,temp.columnCount);
@@ -90,8 +99,10 @@ void Catalog::loadTables(){
     tables.clear();
     if(!std::filesystem::exists("data")) return;
     for(const auto& entry:std::filesystem::directory_iterator("data")){
-            if(entry.path().extension()!=".db") continue;
-            TableMeta meta=readMetadata(entry.path().filename().string());
+            if(!entry.is_directory()) continue;
+            std::filesystem::path filePath=entry.path()/"data.db";
+            if(!std::filesystem::exists(filePath)) continue;
+            TableMeta meta=readMetadata(filePath.string());
             if(meta.name[0]=='\0') continue;
             tables.emplace(meta.name,Table(meta));
     }
