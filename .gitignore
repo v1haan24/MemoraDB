@@ -1,4 +1,6 @@
 bench/
+data/
+docs/
 cmd.txt
 *.exe
 build/
