@@ -6,7 +6,7 @@ bool isBool(const std::string& s){
 }
 
 bool isString(const std::string& s,int maxSize){
-    return s.length()<=maxSize;
+    return s.length()<=maxSize-1;
 }
 
 bool isInt(const std::string& s){
@@ -51,8 +51,7 @@ bool Table::validateValue(const std::string& value,const ColMeta& col){
 
         case BOOL:
             if(!isBool(value)){
-                std::cerr<<"Column '"<<col.name
-                    <<"' expects 'true' or 'false'.\n";
+                std::cerr<<"Column '"<<col.name<<"' expects 'true' or 'false'.\n";
                 return false;
             }
             return true;
@@ -62,8 +61,7 @@ bool Table::validateValue(const std::string& value,const ColMeta& col){
 
 bool Table::validateRow(const Row& row){
     if(row.values.size()!=meta.columnCount){
-        std::cerr<<"Expected "<<meta.columnCount
-            <<" values, but got "<<row.values.size()<<".\n";
+        std::cerr<<"Expected "<<meta.columnCount<<" values, but got "<<row.values.size()<<".\n";
         return false;
     }
 

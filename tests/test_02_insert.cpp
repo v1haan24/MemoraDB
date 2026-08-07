@@ -62,12 +62,12 @@ void stringValidationTest(Table* table){
     assert(!table->insert(longName));
     Row boundary={{
         "111",
-        "ABCDEFGHIJKLMNOPQRSTUVWX123456",
+        "ABCDEFGHIJKLMNOPQRSTUVWX12345",
         "IT",
         "8.50",
         "true"
     }};
-    assert(boundary.values[1].size()==30);
+    assert(boundary.values[1].size()==29);
     assert(table->insert(boundary));
 }
 

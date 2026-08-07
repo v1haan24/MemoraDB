@@ -35,7 +35,7 @@ std::vector<Difference> Table::evolution(const std::string& pk,uint64_t t1,uint6
     const std::vector<RecordVersion>& hist=history.getHistory(pk);
     const RecordVersion* start=history.latestBefore(pk,t1);
     if(start==nullptr) return ans;
-    int idx=static_cast<std::size_t>(start-hist.data());
+    int idx=start-hist.data();
     while(idx+1<hist.size() && hist[idx+1].timestamp<=t2){
         Record r1=readRecord(hist[idx].offset);
         Record r2=readRecord(hist[idx+1].offset);
