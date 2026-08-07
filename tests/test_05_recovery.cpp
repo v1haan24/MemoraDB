@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include <cstdio>
+#include <filesystem>
 #include "../src/catalog/catalog.h"
 using namespace std;
 
@@ -72,7 +73,7 @@ void continueOperationsTest(Table* table){
 
 int main(){
     cout<<"\n========= Recovery Tests =========\n\n";
-    remove("data/Student.db");
+    filesystem::remove_all("data/Student");
     createDatabase();
     Catalog catalog;
     Table* table=restartDatabase(catalog);

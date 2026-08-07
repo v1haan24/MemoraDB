@@ -2,6 +2,15 @@
 #include <chrono>
 #include <cstring>
 
+bool writeMetadata(std::fstream& out,const TableMeta& meta){
+    writeBinary(out,meta.metadataSize);
+    out.write(meta.name,tns);
+    writeBinary(out,meta.payloadSize);
+    writeBinary(out,meta.columnCount);
+    for(const auto& col:meta.columns) writeColumn(out,col);
+    return out.good();
+}
+
 void writeColumn(std::ostream& file,const ColMeta& col){
     file.write(col.name,cns);
     writeBinary(file,col.type);

@@ -3,6 +3,7 @@
 #include <thread>
 #include <chrono>
 #include <cstdio>
+#include <filesystem>
 #include "../src/catalog/catalog.h"
 using namespace std;
 
@@ -75,7 +76,7 @@ void snapshotTest(Table* table,uint64_t t1,uint64_t t3,uint64_t t4){
 
 int main(){
     cout<<"\n========= Temporal Tests =========\n\n";
-    remove("data/Student.db");
+    filesystem::remove_all("data/Student");
     Catalog catalog;
     uint64_t t1,t2,t3,t4;
     Table* table=setupDatabase(catalog,t1,t2,t3,t4);

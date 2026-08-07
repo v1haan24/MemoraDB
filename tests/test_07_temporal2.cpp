@@ -4,6 +4,7 @@
 #include <chrono>
 #include <algorithm>
 #include <cstdio>
+#include <filesystem>
 #include "../src/catalog/catalog.h"
 using namespace std;
 
@@ -108,7 +109,7 @@ void latestStateTest(Table* table){
 
 int main(){
     cout<<"\n======== Temporal Snapshot Tests ========\n\n";
-    remove("data/Student.db");
+    filesystem::remove_all("data/Student");
     Catalog catalog;
     uint64_t t1,t2,t3;
     Table* table=setupDatabase(catalog,t1,t2,t3);
