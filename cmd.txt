@@ -1,0 +1,12 @@
+Remove-Item -Recurse -Force build
+cmake -S . -B build -G Ninja
+cmake --build build
+.\build\showcase.exe
+.\build\test_01_catalog.exe
+.\build\test_02_insert.exe
+.\build\test_03_update.exe
+.\build\test_04_delete.exe
+.\build\test_05_recovery.exe
+.\build\test_06_temporal.exe
+.\build\test_07_temporal2.exe
+.\build\test_08_compact.exe

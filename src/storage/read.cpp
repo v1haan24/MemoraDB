@@ -25,3 +25,11 @@ Record Table::latest(const std::string& pk){
     if(!history.contains(pk)){std::cerr << "No row found.\n"; return {}; }
     return readRecord(history.latest(pk).offset);
 }
+
+std::vector<Record> Table::scanLatest(){
+    std::vector<Record> records;
+    for(const auto& pk:history.list()){
+        records.push_back(latest(pk));
+    }
+    return records;
+}
