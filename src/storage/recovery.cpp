@@ -22,27 +22,33 @@ void Table::recoverState(){
         }
         bool deleted;
         readBinary(file,deleted);
+        if(!file){std::cerr << "Corrupted record encountered during recovery.\n";break;}
         file.seekg(recordStart+rhsz+meta.columns[pk].offset,std::ios::beg);
-       
+        if(!file){std::cerr << "Corrupted record encountered during recovery.\n";break;}
+        
         std::string primaryKey;
         if(meta.columns[pk].type==INT){
             int x;
             readBinary(file,x);
+            if(!file){std::cerr << "Corrupted record encountered during recovery.\n";break;}
             primaryKey=std::to_string(x);
         }
         else if(meta.columns[pk].type==FLOAT){
             float x;
             readBinary(file,x);
+            if(!file){std::cerr << "Corrupted record encountered during recovery.\n";break;}
             primaryKey=std::to_string(x);
         }
         else if(meta.columns[pk].type==BOOL){
             bool x;
             readBinary(file,x);
+            if(!file){std::cerr << "Corrupted record encountered during recovery.\n";break;}
             primaryKey=x?"true":"false";
         }
         else if(meta.columns[pk].type==STRING){
             std::string temp(meta.columns[pk].size,'\0');
             file.read(&temp[0],meta.columns[pk].size);
+            if(!file){std::cerr << "Corrupted record encountered during recovery.\n";break;}
             temp.resize(strnlen(temp.c_str(),meta.columns[pk].size));
             primaryKey=temp;
         }

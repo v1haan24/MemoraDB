@@ -15,9 +15,7 @@ bool Table::deleteRow(const std::string& pk){
     if(deleted){std::cerr<<"Row with primary key '"<<pk<<"' is already deleted.\n"; return false;}
     
     std::vector<char> temp(meta.payloadSize);
-    file.read(temp.data(),meta.payloadSize);
-    if(!file){ std::cerr<<"Failed to read row payload.\n"; return false;}
-    file.clear();
+    if(!file.read(temp.data(), meta.payloadSize)){std::cerr<<"Failed to read record payload.\n";return false;}
     file.seekp(0,std::ios::end);
     uint64_t offset=file.tellp();
     if(!file){ std::cerr<<"Failed to seek to end of file.\n"; return false;}

@@ -1,6 +1,8 @@
 #include "query.h"
 #include <algorithm>
 
+int count(const std::vector<Record>& records){return records.size();}
+
 std::vector<Record> sortRecords(const std::vector<Record>& records,const TableMeta& meta,int column,bool ascending){
     if(column<0 || column>=meta.columnCount) return {};
     std::vector<Record> ans=records;

@@ -3,7 +3,13 @@
 Record project(const Record& record,const std::vector<int>& columns){
     Record result=record;
     result.row.values.clear();
-    for(int column:columns) result.row.values.push_back(record.row.values[column]);
+    for(int column:columns){
+        if(column<0 || column>=record.row.values.size()){
+            std::cerr<<"Invalid column index.\n";
+            return {};
+        }
+        result.row.values.push_back(record.row.values[column]);
+    }
     return result;
 }
 
