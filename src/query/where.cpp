@@ -53,11 +53,14 @@ bool evaluate(const std::string& lhs,const ColMeta& col,const WhereClause& claus
 }
 
 std::vector<Record> where(const std::vector<Record>& candidates,const TableMeta& meta,const WhereClause& clause){
+    if(clause.column<0 || clause.column>=meta.columnCount) return {};
+    const ColMeta& column=meta.columns[clause.column];
+    if(!validateValue(clause.value,column)) return {};
+    if(column.type==BOOL && clause.op!=EQ && clause.op!=NE) return {};
     std::vector<Record> ans={};
     for(const auto& candidate:candidates){
-        const ColMeta& column=meta.columns[clause.column];
         const std::string& value=candidate.row.values[clause.column];
-        if(evaluate(value,column,clause)==true) ans.push_back(candidate);
+        if(evaluate(value,column,clause)) ans.push_back(candidate);
     }
     return ans;
 }

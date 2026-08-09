@@ -23,6 +23,9 @@ uint64_t writeHeader(std::fstream& file,bool deleted);
 void writePayload(std::fstream& file,const TableMeta& meta,const Row& row);
 Row readPayload(std::fstream& file,const TableMeta& meta);
 
+bool validateValue(const std::string& value,const ColMeta& col);
+std::vector<Difference> compareRecords(const Record& before,const Record& after,const TableMeta& meta);
+
 void print(const Row& row);
 void print(const Record& record);
 void print(const std::vector<Row>& rows);
@@ -30,7 +33,6 @@ void print(const std::vector<Record>& records);
 void print(const Difference& diff);
 void print(const std::vector<Difference>& diff);
 
-std::vector<Difference> compareRecords(const Record& before,const Record& after,const TableMeta& meta);
 
 class Table{
     //metadata
@@ -48,7 +50,6 @@ class Table{
     //misc
     std::string getPrimaryKey(const Row& row);
     bool validateRow(const Row& row);
-    bool validateValue(const std::string& value,const ColMeta& col);
     bool appendRecord(const Record& record);
 public:
     Table(const TableMeta& metadata);

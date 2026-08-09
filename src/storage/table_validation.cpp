@@ -25,7 +25,7 @@ bool isFloat(const std::string& s){
     return false;
 }
 
-bool Table::validateValue(const std::string& value,const ColMeta& col){
+bool validateValue(const std::string& value,const ColMeta& col){
     switch(col.type){
         case INT:
             if(!isInt(value)){
