@@ -12,7 +12,7 @@ void Table::openFile(){
 
 Table::Table(const TableMeta& metadata){
     meta=metadata;
-    filePath="data/"+std::string(meta.name)+".db";
+    filePath="data/"+std::string(meta.name)+"/data.db";
     openFile();
     recoverState();
 }

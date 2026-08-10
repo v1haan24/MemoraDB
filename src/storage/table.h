@@ -16,6 +16,7 @@ void readBinary(std::istream& file,T& value){
     file.read(reinterpret_cast<char*>(&value),sizeof(T));
 }
 
+bool writeMetadata(std::fstream& out,const TableMeta& meta);
 void writeColumn(std::ostream& file,const ColMeta& col);
 void readColumn(std::istream& file,ColMeta& col);
 uint64_t writeHeader(std::fstream& file,bool deleted);
@@ -56,6 +57,7 @@ public:
     bool insert(const Row& row);
     bool update(const Row& row);
     bool deleteRow(const std::string& pk);
+    bool compact(uint64_t timestamp);
     Record latest(const std::string& pk);
     Record readRecord(uint64_t offset);
     void printDatabase();
