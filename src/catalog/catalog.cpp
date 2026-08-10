@@ -67,6 +67,7 @@ bool Catalog::createTable(TableMeta& table){
             std::filesystem::remove_all(tablePath);
             return false;
         }
+        tables.emplace(std::string(table.name),std::move(Table(table)));
         file.close();
         tables.emplace(std::string(table.name),std::move(Table(table)));
         return true;

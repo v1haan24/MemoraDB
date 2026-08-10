@@ -59,6 +59,10 @@ public:
     bool update(const Row& row);
     bool deleteRow(const std::string& pk);
     bool compact(uint64_t timestamp);
+    Record latest(const std::string& pk);
+    Record readRecord(uint64_t offset);
+    void printDatabase();
+    TableMeta& getMeta(){ return meta;}
 
     //temporal
     Record selectAsOf(const std::string& pk,uint64_t timestamp);
