@@ -1,6 +1,7 @@
 #include "../storage/table.h"
 
 std::vector<Record> Table::selectBetween(const std::string& pk,uint64_t t1,uint64_t t2){
+    if(t1>t2){ std::cerr<<"Invalid timestamp range.\n"; return {};}
     std::vector<Record> ans;
     if(!history.contains(pk)){ std::cerr<<"No row found.\n"; return {};}
     const std::vector<RecordVersion>& hist=history.getHistory(pk);

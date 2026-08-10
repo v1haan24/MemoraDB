@@ -1,6 +1,9 @@
 bench/
 data/
 docs/
-cmd.txt
+practice/
 *.exe
+build/
+frontend/
+server/
 build/

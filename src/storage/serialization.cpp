@@ -38,7 +38,6 @@ uint64_t writeHeader(std::fstream& file,bool deleted){
 }
 
 void writePayload(std::fstream& file,const TableMeta& meta,const Row& row){
-    char temp[cns]={};
     for(int i=0;i<meta.columnCount;i++){
         if(meta.columns[i].type==INT){
             int x=stoi(row.values[i]);
@@ -53,11 +52,11 @@ void writePayload(std::fstream& file,const TableMeta& meta,const Row& row){
             writeBinary(file,x);
         }
         else if(meta.columns[i].type==STRING){
-            memset(temp,0,cns);
+            std::string temp(meta.columns[i].size,'\0');
             int len=row.values[i].size();
             if(len>meta.columns[i].size-1) len=meta.columns[i].size-1;
-            memcpy(temp,row.values[i].data(),len);
-            file.write(temp,meta.columns[i].size);
+            memcpy(temp.data(),row.values[i].data(),len);
+            file.write(temp.data(),meta.columns[i].size);
         }
     }
 }

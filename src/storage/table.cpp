@@ -16,3 +16,7 @@ Table::Table(const TableMeta& metadata){
     openFile();
     recoverState();
 }
+
+std::vector<std::string> Table::getPrimaryKeys(){
+    return history.list();
+}

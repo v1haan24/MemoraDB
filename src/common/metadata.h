@@ -6,6 +6,8 @@
 #include <cstring>
 #include <cstdint>
 
+enum DataType {INT,FLOAT,STRING,BOOL};
+
 struct ColMeta{
     char name[cns];
     bool isPK;

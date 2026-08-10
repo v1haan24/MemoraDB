@@ -23,6 +23,9 @@ uint64_t writeHeader(std::fstream& file,bool deleted);
 void writePayload(std::fstream& file,const TableMeta& meta,const Row& row);
 Row readPayload(std::fstream& file,const TableMeta& meta);
 
+bool validateValue(const std::string& value,const ColMeta& col);
+std::vector<Difference> compareRecords(const Record& before,const Record& after,const TableMeta& meta);
+
 void print(const Row& row);
 void print(const Record& record);
 void print(const std::vector<Row>& rows);
@@ -30,7 +33,6 @@ void print(const std::vector<Record>& records);
 void print(const Difference& diff);
 void print(const std::vector<Difference>& diff);
 
-std::vector<Difference> compareRecords(const Record& before,const Record& after,const TableMeta& meta);
 
 class Table{
     //metadata
@@ -46,9 +48,8 @@ class Table{
     std::string filePath;
 
     //misc
-    bool validateRow(const Row& row);
-    bool validateValue(const std::string& value,const ColMeta& col);
     std::string getPrimaryKey(const Row& row);
+    bool validateRow(const Row& row);
     bool appendRecord(const Record& record);
 public:
     Table(const TableMeta& metadata);
@@ -72,4 +73,12 @@ public:
     std::vector<Difference> evolution(const std::string& pk,uint64_t t1,uint64_t t2);
     bool rollback(const std::string& pk,uint64_t timestamp); //row roll-back
     bool rollback(uint64_t timestamp); //table roll-back
+
+    //misc
+    std::vector<std::string> getPrimaryKeys();
+    Record latest(const std::string& pk);
+    std::vector<Record> scanLatest();
+    Record readRecord(uint64_t offset);
+    void printDatabase();
+    TableMeta& getMeta(){ return meta;}
 };

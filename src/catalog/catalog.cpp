@@ -69,6 +69,7 @@ bool Catalog::createTable(TableMeta& table){
         }
         tables.emplace(std::string(table.name),std::move(Table(table)));
         file.close();
+        tables.emplace(std::string(table.name),std::move(Table(table)));
         return true;
 }
 
