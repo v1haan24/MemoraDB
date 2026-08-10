@@ -24,3 +24,8 @@ bool Table::insert(const Row& row){
     history.addVersion(pk,{t, offset});
     return true;
 }
+
+bool Table::insertSemantic(std::string pk,uint64_t timestamp,const Row& row){
+    std::string temp = "";
+    
+}

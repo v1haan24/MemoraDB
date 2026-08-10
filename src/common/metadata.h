@@ -12,6 +12,7 @@ struct ColMeta{
     DataType type;
     int size;
     int offset=0;
+    bool isSemantic=false; // indicates if this column is used for semantic vector embedding
     ColMeta()=default;
     ColMeta(std::string n,DataType t,bool pk,int s=0){
         strncpy(name,n.c_str(),cns-1);

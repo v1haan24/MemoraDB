@@ -72,4 +72,7 @@ public:
     std::vector<Difference> evolution(const std::string& pk,uint64_t t1,uint64_t t2);
     bool rollback(const std::string& pk,uint64_t timestamp); //row roll-back
     bool rollback(uint64_t timestamp); //table roll-back
+
+    //semantic
+    bool insertSemantic(std::string pk,uint64_t timestamp,const Row& row);
 };
