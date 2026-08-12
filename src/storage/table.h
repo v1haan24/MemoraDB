@@ -23,6 +23,9 @@ uint64_t writeHeader(std::fstream& file,bool deleted);
 void writePayload(std::fstream& file,const TableMeta& meta,const Row& row);
 Row readPayload(std::fstream& file,const TableMeta& meta);
 
+void writeString(std::ostream& file,const std::string& s); //For .queue files
+void readString(std::istream& file,std::string& s);
+
 void print(const Row& row);
 void print(const Record& record);
 void print(const std::vector<Row>& rows);
@@ -74,5 +77,5 @@ public:
     bool rollback(uint64_t timestamp); //table roll-back
 
     //semantic
-    bool insertSemantic(std::string pk,uint64_t timestamp,const Row& row);
+    bool writeQueue(std::string pk,uint64_t timestamp,const Row& row);
 };

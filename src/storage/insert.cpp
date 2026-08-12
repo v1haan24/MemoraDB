@@ -1,6 +1,7 @@
 #include "table.h"
 #include <iostream>
 
+
 bool Table::insert(const Row& row){
     if(!validateRow(row)) return false;
 
@@ -22,10 +23,7 @@ bool Table::insert(const Row& row){
         return false;
     }
     history.addVersion(pk,{t, offset});
-    return true;
-}
 
-bool Table::insertSemantic(std::string pk,uint64_t timestamp,const Row& row){
-    std::string temp = "";
-    
+    writeQueue(pk,t,row); // Write to queue if semantic columns exist
+    return true;
 }

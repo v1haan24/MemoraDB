@@ -3,7 +3,7 @@
 
 vecTable::vecTable(const VectorMeta& metadata) : meta(metadata) {}
 
-bool vecTable::insert(std::string pk, uint64_t timestamp, const float (&embed)[VEC_DIM]){
+bool vecTable::insert(const std::string& pk, uint64_t timestamp, const float* embed){
     if(pk.empty()){ 
         std::cerr<<"ERROR: primary key cannot be empty.\n"; 
         return false; 
@@ -27,7 +27,7 @@ bool vecTable::insert(std::string pk, uint64_t timestamp, const float (&embed)[V
     std::memcpy(&padded[0], pk.data(), pk.size());
     file.write(padded.data(), meta.pkSize);
     writeBinary(file, timestamp);
-    writeBinary(file, embed);
+    file.write(reinterpret_cast<const char*>(embed), sizeof(float)*VEC_DIM);
 
     if(!file){ std::cerr<<"ERROR: Failed to write record to '"<<meta.tablePath<<"'.\n"; return false; }
 

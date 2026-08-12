@@ -8,7 +8,7 @@ class vecTable{
 
     public:
     vecTable(const VectorMeta& metadata);
-    bool insert(std::string pk, uint64_t timestamp, const float (&embed)[VEC_DIM]);
+    bool insert(const std::string& pk, uint64_t timestamp, const float* embed);
     VecRecord readRecord(uint32_t id);
 
     VectorMeta& getMeta(){ return meta; }
