@@ -4,6 +4,4 @@ docs/
 practice/
 *.exe
 build/
-frontend/
-server/
-build/
+webpage/
