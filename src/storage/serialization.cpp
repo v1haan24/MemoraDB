@@ -32,6 +32,7 @@ void writeColumn(std::ostream& file,const ColMeta& col){
     writeBinary(file,col.size);
     writeBinary(file,col.offset);
     writeBinary(file,col.isPK);
+    writeBinary(file,col.isSemantic);
 }
 
 void readColumn(std::istream& file,ColMeta& col){
@@ -40,6 +41,7 @@ void readColumn(std::istream& file,ColMeta& col){
     readBinary(file,col.size);
     readBinary(file,col.offset);
     readBinary(file,col.isPK);
+    readBinary(file,col.isSemantic);
 }
 
 uint64_t writeHeader(std::fstream& file,bool deleted){

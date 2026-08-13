@@ -49,6 +49,7 @@ float vecTable::cosineSimilarity(const float (&a)[VEC_DIM],const float (&b)[VEC_
 }
 
 std::vector<SearchResult> vecTable::semanticSearch(const std::vector<VCandidate>& candidates,const float (&queryEmbedding)[VEC_DIM],int k){
+    if(k<=0) return {};
     auto compare=[](const SearchResult& a,const SearchResult& b){
         return a.score>b.score;
     };
@@ -122,7 +123,7 @@ bool vecTable::insert(const std::string& pk, uint64_t timestamp, const float* em
     std::memcpy(&padded[0], pk.data(), pk.size());
     file.write(padded.data(), meta.pkSize);
     writeBinary(file, timestamp);
-    writeBinary(file, embed);
+    file.write(reinterpret_cast<const char*>(embed),sizeof(float)*VEC_DIM);
 
     if(!file){ std::cerr<<"ERROR: Failed to write record to '"<<meta.tablePath<<"'.\n"; return false; }
 

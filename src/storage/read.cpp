@@ -1,11 +1,14 @@
 #include "table.h"
 
 std::string Table::getPrimaryKey(const Row& row){
-        for(int i=0;i<meta.columnCount;i++){
-            if(meta.columns[i].isPK) return row.values[i];
-        }
-        std::cerr<<"Primary key not found.\n";
-        return "";
+    for(int i=0;i<meta.columnCount;i++){
+        if(!meta.columns[i].isPK) continue;
+        if(meta.columns[i].type==INT) return std::to_string(std::stoi(row.values[i]));
+        if(meta.columns[i].type==FLOAT) return std::to_string(std::stof(row.values[i]));
+        return row.values[i];
+    }
+    std::cerr<<"Primary key not found.\n";
+    return "";
 }
 
 Record Table::readRecord(uint64_t offset){
@@ -29,7 +32,8 @@ Record Table::latest(const std::string& pk){
 std::vector<Record> Table::scanLatest(){
     std::vector<Record> records;
     for(const auto& pk:history.list()){
-        records.push_back(latest(pk));
+        Record record=readRecord(history.latest(pk).offset);
+        if(!record.deleted) records.push_back(record);
     }
     return records;
 }

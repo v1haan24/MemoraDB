@@ -1,5 +1,6 @@
 #include "table.h"
 #include <iostream>
+#include <filesystem>
 
 void Table::recoverState(){
     file.clear();
@@ -11,6 +12,7 @@ void Table::recoverState(){
     if(pk==-1){ std::cerr<<"Table '"<<meta.name<<"' has no primary key column.\n";return; }
 
     file.seekg(meta.metadataSize,std::ios::beg);
+    uint64_t lastValidOffset=meta.metadataSize;
     while(true){
         uint64_t recordStart=file.tellg();
 
@@ -52,8 +54,17 @@ void Table::recoverState(){
             temp.resize(strnlen(temp.c_str(),meta.columns[pk].size));
             primaryKey=temp;
         }
+        uint64_t recordEnd=recordStart+rhsz+meta.payloadSize;
+        file.seekg(0,std::ios::end);
+        if((uint64_t)file.tellg()<recordEnd){std::cerr<<"Corrupted record encountered during recovery.\n"; break;}
         history.addVersion(primaryKey,{timestamp,recordStart});
-        file.seekg(recordStart+rhsz+meta.payloadSize,std::ios::beg);
+        lastValidOffset=recordEnd;
+        file.seekg(lastValidOffset,std::ios::beg);
     }
-    
+    file.clear();
+    file.close();
+    if(std::filesystem::file_size(filePath)>lastValidOffset){
+        std::filesystem::resize_file(filePath,lastValidOffset);
+    }
+    openFile();
 }
