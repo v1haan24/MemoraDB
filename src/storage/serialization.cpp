@@ -1,8 +1,10 @@
 #include "table.h"
+#include "../semantic/embed_queue.h"
 #include <chrono>
 #include <cstring>
 #include <filesystem>
 #include <mutex>
+#include <thread>
 
 void writeString(std::ostream& file,const std::string& s){
     uint32_t len=(uint32_t)s.size();
@@ -32,6 +34,7 @@ void writeColumn(std::ostream& file,const ColMeta& col){
     writeBinary(file,col.size);
     writeBinary(file,col.offset);
     writeBinary(file,col.isPK);
+    writeBinary(file,col.isSemantic);
 }
 
 void readColumn(std::istream& file,ColMeta& col){
@@ -40,6 +43,7 @@ void readColumn(std::istream& file,ColMeta& col){
     readBinary(file,col.size);
     readBinary(file,col.offset);
     readBinary(file,col.isPK);
+    readBinary(file,col.isSemantic);
 }
 
 uint64_t writeHeader(std::fstream& file,bool deleted){
@@ -107,58 +111,98 @@ Row readPayload(std::fstream& file,const TableMeta& meta){
 }
 
 bool Table::writeQueue(std::string pk,uint64_t timestamp,const Row& row){
-    std::string temp = "";
-    for(int i = 0; i<meta.columnCount; i++){
+    std::string semanticText;
+
+    for(int i = 0; i < meta.columnCount; i++){
         if(meta.columns[i].isSemantic){
-            temp = temp + meta.columns[i].name + ": ";
-            temp += row.values[i] + " ";
+            semanticText += meta.columns[i].name;
+            semanticText += ": ";
+            semanticText += row.values[i];
+            semanticText += " ";
         }
     }
 
-    if(temp.length()==0) return false; // no semantic columns on this table -> nothing to embed
-
-    std::string dir = "data/"+std::string(meta.name)+"/queue";
-    std::filesystem::create_directories(dir);
-    std::string detPath = dir+"/temp_det.queue";
-    std::string tasksPath = dir+"/temp_tasks.queue";
-
-    // make sure both files exist first 
-    { std::ofstream touch1(detPath, std::ios::app|std::ios::binary); }
-    { std::ofstream touch2(tasksPath, std::ios::app); }
-
-    std::fstream file1(detPath, std::ios::in | std::ios::out | std::ios::binary);
-    std::fstream file2(tasksPath, std::ios::in | std::ios::out);
-    if(!file1 || !file2){
-        std::cerr<<"Failed to open queue files for writing.\n";
+    if(semanticText.empty())
         return false;
-    }
+
+    const std::filesystem::path dir = "data/embedding_queue";
+    const std::filesystem::path tempPath = dir / "temp_tasks.queue";
+    const std::filesystem::path lockPath = dir / "queue.lock";
+
+    std::filesystem::create_directories(dir);
 
     static std::mutex queueMutex;
-    std::lock_guard<std::mutex> lock(queueMutex);
+    std::lock_guard<std::mutex> threadLock(queueMutex);
 
-    file1.seekp(0,std::ios::end);
-    bool wasEmpty = (file1.tellp()==0); //Check if the file is empty
-    if(wasEmpty){
-        int c = 0;
-        writeBinary(file1,c);
-    }
-
-    writeString(file1, pk); 
-    writeBinary(file1, timestamp);
-
-    file2.seekp(0,std::ios::end);
-    file2<<temp<<"\n";
-
-    int count;
-    file1.seekg(0,std::ios::beg);
-    readBinary(file1,count);
-    count++;
-    file1.seekp(0,std::ios::beg);
-    writeBinary(file1,count);
-
-    if(!file1 || !file2){
-        std::cerr<<"Failed to write to queue files.\n";
+    /*
+        The directory lock is shared with embedMake.exe. It prevents the
+        consumer from renaming the temporary queue while this process is
+        appending a new record.
+    */
+    if(!acquireQueueLock(lockPath, 5000)){
+        std::cerr << "Timed out waiting for the global embedding queue lock.\n";
         return false;
     }
-    return true;
+
+    bool success = false;
+
+    do{
+        std::fstream file(
+            tempPath,
+            std::ios::in | std::ios::out | std::ios::binary
+        );
+
+        if(!file){
+            std::ofstream create(tempPath, std::ios::binary);
+            if(!create){
+                std::cerr << "Failed to create global embedding queue.\n";
+                break;
+            }
+            uint32_t count = 0;
+            writeBinary(create, count);
+            create.close();
+
+            file.open(tempPath, std::ios::in | std::ios::out | std::ios::binary);
+        }
+
+        if(!file){
+            std::cerr << "Failed to open global embedding queue.\n";
+            break;
+        }
+
+        uint32_t count = 0;
+        file.seekg(0, std::ios::beg);
+        readBinary(file, count);
+
+        if(!file){
+            std::cerr << "Failed to read global embedding queue header.\n";
+            break;
+        }
+
+        file.clear();
+        file.seekp(0, std::ios::end);
+
+        writeString(file, std::string(meta.name));
+        writeString(file, pk);
+        writeBinary(file, timestamp);
+        writeString(file, semanticText);
+
+        if(!file){
+            std::cerr << "Failed to append record to global embedding queue.\n";
+            break;
+        }
+
+        ++count;
+
+        file.clear();
+        file.seekp(0, std::ios::beg);
+        writeBinary(file, count);
+
+        file.flush();
+
+        success = file.good();
+    }while(false);
+
+    releaseQueueLock(lockPath);
+    return success;
 }

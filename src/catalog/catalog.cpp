@@ -52,7 +52,7 @@ bool Catalog::createTable(TableMeta& table){
         table.columnCount=table.columns.size();
         table.metadataSize=
             sizeof(int)+tns+sizeof(int)+sizeof(int)+
-            table.columnCount*(cns+sizeof(DataType)+sizeof(int)+sizeof(int)+sizeof(bool));
+            table.columnCount*(cns+sizeof(DataType)+sizeof(int)+sizeof(int)+sizeof(bool)+sizeof(bool));
             
         writeBinary(file,table.metadataSize);
 

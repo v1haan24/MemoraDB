@@ -11,7 +11,7 @@ bool vecMeta::createVecTable(VectorMeta& vec, TableMeta& table){
         return false;
     }
 
-    std::filesystem::create_directories("data/"+std::string(table.name)); // Create the directory if it doesn't exist
+    std::filesystem::create_directories("data/"+std::string(table.name));
 
     int pkSize=0, pkCount=0;
     for(auto &c:table.columns){
@@ -19,7 +19,7 @@ bool vecMeta::createVecTable(VectorMeta& vec, TableMeta& table){
     }
     if(pkCount!=1){ std::cerr<<"Table '"<<table.name<<"' must have exactly one primary key to create a vector table.\n"; return false; }
     if(pkSize<=0){ std::cerr<<"Invalid primary key size for '"<<table.name<<"'.\n"; return false; }
-    
+
     std::ofstream file(vec.tablePath, std::ios::binary);
     if(!file){ std::cerr<<"Failed to create file "<<vec.tablePath<<" for table "<<table.name<<"\n"; return false; }
 
@@ -39,26 +39,34 @@ bool vecMeta::createVecTable(VectorMeta& vec, TableMeta& table){
     writeBinary(file,vec.payloadSize);
 
     if(!file){ std::cerr<<"Failed to write header for "<<vec.tablePath<<"\n"; return false; }
-    
+
     file.close();
     return true;
-
 }
 
-VectorMeta vecMeta::readMetadata(const std::string& fileName, TableMeta& table){
-    std::filesystem::path path = "data/"+std::string(table.name)+"/"+fileName;
+VectorMeta vecMeta::readMetadata(const std::string& fileName){
+    std::filesystem::path filePath(fileName);
+    std::string tableName = filePath.stem().string();
+    std::filesystem::path path = std::filesystem::path("data") / tableName / fileName;
+
     std::ifstream file(path, std::ios::binary);
-    if(!file){ std::cerr<<"Unable to open vector metadata file "<<fileName<<"\n"; return {}; }
- 
+    if(!file){
+        std::cerr<<"Unable to open vector metadata file "<<fileName<<"\n";
+        return {};
+    }
+
     VectorMeta vec;
     readBinary(file, vec.metadataSize);
     file.read(vec.name, tns);
     readBinary(file, vec.pkSize);
     readBinary(file, vec.recordCount);
     readBinary(file, vec.payloadSize);
- 
-    if(!file){ std::cerr<<"Failed to read vector metadata from "<<fileName<<"\n"; return {}; }
- 
+
+    if(!file){
+        std::cerr<<"Failed to read vector metadata from "<<fileName<<"\n";
+        return {};
+    }
+
     vec.tablePath = path;
     return vec;
 }

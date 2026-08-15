@@ -25,5 +25,5 @@ struct VecRecord{
 class vecMeta{
     public:
     bool createVecTable(VectorMeta& vec, TableMeta& table);
-    VectorMeta readMetadata(const std::string& fileName, TableMeta& table); 
+    VectorMeta readMetadata(const std::string& fileName);
 };
