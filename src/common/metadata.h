@@ -11,7 +11,7 @@ enum DataType {INT,FLOAT,STRING,BOOL};
 struct ColMeta{
     char name[cns];
     bool isPK;
-     bool isSemantic=false;
+    bool isSemantic=false;
     DataType type;
     int size;
     int offset=0;
