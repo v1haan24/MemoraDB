@@ -98,7 +98,7 @@ Row readPayload(std::fstream& file,const TableMeta& meta){
 #include <filesystem>
 #include <mutex>
 #include <thread>
-#include "../semantic/embed_queue.h"
+#include "../vector/embed_queue.h"
 void writeString(std::ostream& file,const std::string& s){
     uint32_t len=(uint32_t)s.size();
     writeBinary(file,len);
@@ -125,18 +125,13 @@ bool Table::writeQueue(std::string pk,uint64_t timestamp,const Row& row){
     const std::filesystem::path tempPath=dir/"temp_tasks.queue";
     const std::filesystem::path lockPath=dir/"queue.lock";
     std::filesystem::create_directories(dir);
-    static std::mutex queueMutex;
-    std::lock_guard<std::mutex> threadLock(queueMutex);
     if(!acquireQueueLock(lockPath,5000)){
         std::cerr<<"Timed out waiting for the global embedding queue lock.\n";
         return false;
     }
     bool success=false;
     do{
-        std::fstream file(
-            tempPath,
-            std::ios::in|std::ios::out|std::ios::binary
-        );
+        std::fstream file(tempPath, std::ios::in|std::ios::out|std::ios::binary);
         if(!file){
             std::ofstream create(tempPath,std::ios::binary);
             if(!create){
