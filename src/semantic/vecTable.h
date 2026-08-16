@@ -4,6 +4,8 @@
 
 class vecTable{
     private:
+    //file
+    std::fstream file;
     VectorMeta meta;
 
     public:

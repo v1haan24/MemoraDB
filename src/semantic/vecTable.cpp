@@ -1,7 +1,16 @@
 #include "vecTable.h"
 #include <iostream>
 
-vecTable::vecTable(const VectorMeta& metadata) : meta(metadata) {}
+vecTable::vecTable(const VectorMeta& metadata){
+    meta=metadata;
+    file.open(meta.tablePath,std::ios::binary|std::ios::in|std::ios::out);
+    if(!file.is_open()){
+        file.clear();
+        file.open(meta.tablePath,std::ios::binary|std::ios::out);
+        file.close();
+        file.open(meta.tablePath,std::ios::binary|std::ios::in|std::ios::out);
+    }
+}
 
 bool vecTable::insert(const std::string& pk, uint64_t timestamp, const float* embed){
     if(pk.empty()){ 
@@ -13,9 +22,8 @@ bool vecTable::insert(const std::string& pk, uint64_t timestamp, const float* em
         return false;
     }
 
-    std::fstream file(meta.tablePath, std::ios::binary|std::ios::in|std::ios::out);
-    if(!file){ 
-        std::cerr<<"ERROR: Couldn't open .vec file '"<<meta.tablePath<<"'!\n"; 
+    if(!file.is_open()){ 
+        std::cerr<<"ERROR: .vec file '"<<meta.tablePath<<"' is not open!\n"; 
         return false; 
     }
 
@@ -46,9 +54,8 @@ VecRecord vecTable::readRecord(uint32_t id){
         return rec;
     }
  
-    std::ifstream file(meta.tablePath, std::ios::binary);
-    if(!file){ std::cerr<<"ERROR: Couldn't open .vec file '"<<meta.tablePath<<"'!\n"; return rec; }
- 
+    file.seekg(0,std::ios::beg);
+    if(!file){ std::cerr<<"ERROR: failed to seek to beginning of file.\n"; return rec; }
     uint64_t offset = (uint64_t)meta.metadataSize + (uint64_t)id*(uint64_t)meta.payloadSize;
     file.seekg(offset, std::ios::beg);
     if(!file){ std::cerr<<"ERROR: failed to seek to record "<<id<<".\n"; return rec; }

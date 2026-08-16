@@ -8,9 +8,9 @@
 
 struct VectorMeta{
     int metadataSize;
-    uint32_t recordCount=0;
     char name[tns];
     int pkSize=0;
+    uint32_t recordCount=0;
     int payloadSize=0;
     std::filesystem::path tablePath;
 };

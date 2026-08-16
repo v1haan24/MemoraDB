@@ -3,7 +3,6 @@
 #include <chrono>
 #include <cstring>
 #include <filesystem>
-#include <mutex>
 #include <thread>
 
 void writeString(std::ostream& file,const std::string& s){
@@ -131,9 +130,6 @@ bool Table::writeQueue(std::string pk,uint64_t timestamp,const Row& row){
 
     std::filesystem::create_directories(dir);
 
-    static std::mutex queueMutex;
-    std::lock_guard<std::mutex> threadLock(queueMutex);
-
     /*
         The directory lock is shared with embedMake.exe. It prevents the
         consumer from renaming the temporary queue while this process is
@@ -147,10 +143,7 @@ bool Table::writeQueue(std::string pk,uint64_t timestamp,const Row& row){
     bool success = false;
 
     do{
-        std::fstream file(
-            tempPath,
-            std::ios::in | std::ios::out | std::ios::binary
-        );
+        std::fstream file(tempPath, std::ios::in | std::ios::out | std::ios::binary);
 
         if(!file){
             std::ofstream create(tempPath, std::ios::binary);
