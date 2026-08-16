@@ -22,5 +22,6 @@ bool Table::insert(const Row& row){
         return false;
     }
     history.addVersion(pk,{t, offset});
+    writeQueue(pk,t,row);
     return true;
 }

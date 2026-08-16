@@ -52,7 +52,7 @@ bool Catalog::createTable(TableMeta& table){
         table.columnCount=table.columns.size();
         table.metadataSize=
             sizeof(int)+tns+sizeof(int)+sizeof(int)+
-            table.columnCount*(cns+sizeof(DataType)+sizeof(int)+sizeof(int)+sizeof(bool));
+            table.columnCount*(cns+sizeof(DataType)+sizeof(int)+sizeof(int)+sizeof(bool)+sizeof(bool));
             
         writeBinary(file,table.metadataSize);
 
@@ -67,7 +67,6 @@ bool Catalog::createTable(TableMeta& table){
             std::filesystem::remove_all(tablePath);
             return false;
         }
-        tables.emplace(std::string(table.name),std::move(Table(table)));
         file.close();
         tables.emplace(std::string(table.name),std::move(Table(table)));
         return true;

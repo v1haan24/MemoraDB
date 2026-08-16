@@ -23,6 +23,9 @@ uint64_t writeHeader(std::fstream& file,bool deleted);
 void writePayload(std::fstream& file,const TableMeta& meta,const Row& row);
 Row readPayload(std::fstream& file,const TableMeta& meta);
 
+void writeString(std::ostream& file,const std::string& s); //For .queue files
+void readString(std::istream& file,std::string& s);
+
 bool validateValue(const std::string& value,const ColMeta& col);
 std::vector<Difference> compareRecords(const Record& before,const Record& after,const TableMeta& meta);
 
@@ -59,11 +62,7 @@ public:
     bool update(const Row& row);
     bool deleteRow(const std::string& pk);
     bool compact(uint64_t timestamp);
-    Record latest(const std::string& pk);
-    Record readRecord(uint64_t offset);
-    void printDatabase();
-    TableMeta& getMeta(){ return meta;}
-
+    
     //temporal
     Record selectAsOf(const std::string& pk,uint64_t timestamp);
     std::vector<Record> selectBetween(const std::string& pk,uint64_t t1,uint64_t t2);
@@ -81,4 +80,7 @@ public:
     Record readRecord(uint64_t offset);
     void printDatabase();
     TableMeta& getMeta(){ return meta;}
+
+    //semantic
+    bool writeQueue(std::string pk,uint64_t timestamp,const Row& row);
 };

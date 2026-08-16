@@ -23,5 +23,6 @@ bool Table::update(const Row& row){
         return false;
     }
     history.addVersion(pk,{t, offset});
+    writeQueue(pk,t,row); 
     return true;
 }

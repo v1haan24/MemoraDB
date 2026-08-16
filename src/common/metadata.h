@@ -11,6 +11,7 @@ enum DataType {INT,FLOAT,STRING,BOOL};
 struct ColMeta{
     char name[cns];
     bool isPK;
+    bool isSemantic=false;
     DataType type;
     int size;
     int offset=0;
@@ -55,4 +56,15 @@ struct Difference{
     std::string column;
     std::string before;
     std::string after;
+};
+
+struct VCandidate{
+    std::string pk;
+    uint64_t timestamp;
+};
+
+struct SearchResult {
+    std::string pk;
+    uint64_t timestamp;
+    float score;
 };
