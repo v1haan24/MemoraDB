@@ -69,7 +69,7 @@ for _ in range(5):
     model.encode("natural language processing")
 
 print("Warmup complete.")
-print("Global worker active and listening...\n")
+print("Global worker active and listening...\n", flush=True)
 
 while True:
     if not os.path.exists(QUEUE_FILE):

@@ -10,3 +10,4 @@ cmake --build build
 .\build\test_06_temporal.exe
 .\build\test_07_temporal2.exe
 .\build\test_08_compact.exe
+cmake --build build --target live_pipeline
