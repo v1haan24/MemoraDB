@@ -1,7 +1,6 @@
 bench/
 build/
 data/
-docs/
 practice/
 *.exe
 webpage/
