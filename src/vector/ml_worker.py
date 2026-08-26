@@ -8,6 +8,9 @@ QUEUE_FILE = os.path.join(QUEUE_DIR, "tasks.queue")
 TEMP_VEC_FILE = os.path.join(QUEUE_DIR, "temp_embeddings.vec")
 VEC_FILE = os.path.join(QUEUE_DIR, "embeddings.vec")
 DONE_FILE = os.path.join(QUEUE_DIR, "done.signal")
+QUERY_DONE_FILE = os.path.join(QUEUE_DIR, "query_done.signal")
+QUERY_Q_FILE = os.path.join(QUEUE_DIR, "query.queue")
+QUERY_VEC_FILE = os.path.join(QUEUE_DIR, "query_embedding.vec")
 
 POLL_INTERVAL = 0.001  # 1 ms
 
@@ -72,6 +75,26 @@ print("Warmup complete.")
 print("Global worker active and listening...\n", flush=True)
 
 while True:
+    if os.path.exists(QUERY_Q_FILE):
+        try:
+            with open(QUERY_Q_FILE, "rb") as f:
+                query_text = read_string(f)
+
+            query_embedding = model.encode(query_text, convert_to_numpy=True)
+
+            with open(QUERY_VEC_FILE, "wb") as f:
+                f.write(query_embedding.astype("float32").tobytes())
+                f.flush()
+                os.fsync(f.fileno())
+
+            os.remove(QUERY_Q_FILE)
+
+            with open(QUERY_DONE_FILE, "w"):
+                pass
+
+        except Exception as e:
+            print("Query processing error:", e)
+
     if not os.path.exists(QUEUE_FILE):
         time.sleep(POLL_INTERVAL)
         continue

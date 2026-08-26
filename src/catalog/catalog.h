@@ -16,4 +16,5 @@ public:
     bool createTable(TableMeta& table);
     Table* getTable(const std::string& tableName);
     void showTables();
+    bool loadTable(const std::string& tableName);
 };

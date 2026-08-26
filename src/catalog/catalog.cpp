@@ -115,3 +115,16 @@ void Catalog::showTables(){
     }
     for(auto &t:tables) std::cout<<t.first<<'\n';
 }
+
+bool Catalog::loadTable(const std::string& tableName){
+    if(exist(tableName))
+        return true;
+
+    std::filesystem::path filePath = std::filesystem::path("data") / tableName / "data.db";
+    if(!std::filesystem::exists(filePath)) return false;
+    TableMeta meta = readMetadata(filePath.string());
+    if(meta.name[0] == '\0') return false;
+    tables.emplace(meta.name, Table(meta));
+
+    return true;
+}

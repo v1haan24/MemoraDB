@@ -174,3 +174,63 @@ bool Table::writeQueue(std::string pk,uint64_t timestamp,const Row& row){
     releaseQueueLock(lockPath);
     return success;
 }
+
+std::vector<float> strToEmbed(std::string &str){
+    const int PYTHON_TIMEOUT_MS = 120000;
+    const std::filesystem::path dir="data/embedding_queue";
+    const std::filesystem::path tempqueryFile=dir/"temp_query.queue";
+    const std::filesystem::path queryFile=dir/"query.queue";
+    const std::filesystem::path embedFile=dir/"query_embedding.vec";
+    const std::filesystem::path doneFile=dir/"query_done.signal";
+    std::filesystem::create_directories(dir);
+
+    std::ofstream file(tempqueryFile,std::ios::binary | std::ios::trunc);
+    if(!file){
+        std::cerr<<"Failed to convert string to embed.\n";
+        return {};
+    }
+
+    writeString(file, str);
+    std::filesystem::rename(tempqueryFile, queryFile);
+    auto pythonStart = std::chrono::steady_clock::now();
+    bool done = false;
+
+    while(true){
+        if(fs::exists(doneFile)){
+            done = true;
+            break;
+        }
+
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - pythonStart).count();
+
+        if(elapsed >= PYTHON_TIMEOUT_MS)
+            break;
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
+
+    if(!done){
+        std::cerr << "Timed out waiting for Python worker.\n";
+        return {};
+    }
+
+    std::vector<float> embedding(VEC_DIM);
+    std::ifstream embed(embedFile, std::ios::binary);
+    if(!embed){
+        std::cerr << "Failed to open " << embedFile << ".\n";
+        return {};
+    }
+
+    embed.read(reinterpret_cast<char*>(embedding.data()), static_cast<std::streamsize>(sizeof(float) * embedding.size()));
+
+    if(!embed){
+        std::cerr << "Failed to read embeddings from " << embedFile << ".\n";
+        return {};
+    }
+
+    embed.close();
+    std::filesystem::remove(embedFile);
+
+    return embedding;
+    
+}
