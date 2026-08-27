@@ -72,6 +72,11 @@ public:
     std::vector<Difference> evolution(const std::string& pk,uint64_t t1,uint64_t t2);
     bool rollback(const std::string& pk,uint64_t timestamp); //row roll-back
     bool rollback(uint64_t timestamp); //table roll-back
+    bool isDeleted(uint64_t offset);
+    std::vector<VCandidate> scanLatestKeys();
+    std::vector<VCandidate> snapshotKeys(uint64_t timestamp);
+    std::vector<VCandidate> selectBetweenKeys(const std::string& pk,uint64_t t1,uint64_t t2);
+    std::vector<VCandidate> showHistoryKeys(const std::string& pk);
 
     //misc
     std::vector<std::string> getPrimaryKeys();

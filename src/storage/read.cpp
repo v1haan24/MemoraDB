@@ -37,3 +37,25 @@ std::vector<Record> Table::scanLatest(){
     }
     return records;
 }
+
+bool Table::isDeleted(uint64_t offset){
+    file.clear();
+    file.seekg(offset,std::ios::beg);
+    if(!file){ std::cerr<<"Failed to seek to record.\n"; return true;}
+    uint64_t timestamp;
+    bool deleted;
+    readBinary(file,timestamp);
+    readBinary(file,deleted);
+    if(!file){ std::cerr<<"Failed to read record header.\n"; return true;}
+    return deleted;
+}
+
+std::vector<VCandidate> Table::scanLatestKeys(){
+    std::vector<VCandidate> keys;
+    for(const auto& pk:history.list()){
+        const RecordVersion& v=history.latest(pk);
+        if(isDeleted(v.offset)) continue;
+        keys.push_back({pk,v.timestamp});
+    }
+    return keys;
+}

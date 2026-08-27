@@ -22,3 +22,25 @@ std::vector<Record> generateCandidates(Table& table,CandidateMode mode,uint64_t 
     }
     return {};
 }
+std::vector<VCandidate> generateCandidateKeys(Table& table,CandidateMode mode,uint64_t t1,uint64_t t2){
+    std::vector<VCandidate> candidates;
+    if(mode==LATEST) return table.scanLatestKeys();
+    else if(mode==SNAPSHOT) return table.snapshotKeys(t1);
+    else if(mode==BETWEEN){
+        auto keys=table.getPrimaryKeys();
+        for(const auto& pk:keys){
+            auto records=table.selectBetweenKeys(pk,t1,t2);
+            candidates.insert(candidates.end(),records.begin(),records.end());
+        }
+        return candidates;
+    }
+    else if(mode==HISTORY){
+        auto keys=table.getPrimaryKeys();
+        for(const auto& pk:keys){
+            auto records=table.showHistoryKeys(pk);
+            candidates.insert(candidates.end(),records.begin(),records.end());
+        }
+        return candidates;
+    }
+    return {};
+}
