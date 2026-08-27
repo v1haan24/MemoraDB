@@ -1,4 +1,4 @@
-#include "temporal_semantic_search.h"
+#include "temporal_semantic.h"
 
 std::vector<SearchResult> temporalSemanticSearch(
     Table& table,
