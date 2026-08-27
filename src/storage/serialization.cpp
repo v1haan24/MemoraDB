@@ -175,7 +175,7 @@ bool Table::writeQueue(std::string pk,uint64_t timestamp,const Row& row){
     return success;
 }
 
-std::vector<float> strToEmbed(std::string &str){
+std::vector<float> strToEmbed(const std::string &str){
     const int PYTHON_TIMEOUT_MS = 120000;
     const std::filesystem::path dir="data/embedding_queue";
     const std::filesystem::path tempqueryFile=dir/"temp_query.queue";
@@ -184,14 +184,27 @@ std::vector<float> strToEmbed(std::string &str){
     const std::filesystem::path doneFile=dir/"query_done.signal";
     std::filesystem::create_directories(dir);
 
+    std::error_code ec;
+    std::filesystem::remove(doneFile, ec);
+    std::filesystem::remove(embedFile, ec);
+    {
     std::ofstream file(tempqueryFile,std::ios::binary | std::ios::trunc);
     if(!file){
-        std::cerr<<"Failed to convert string to embed.\n";
+        std::cerr<<"Failed to create query queue file.\n";
         return {};
     }
 
     writeString(file, str);
-    std::filesystem::rename(tempqueryFile, queryFile);
+    file.flush();
+    }
+
+    try {
+        std::filesystem::rename(tempqueryFile, queryFile);
+    }
+    catch (const std::filesystem::filesystem_error& e) {
+        std::cerr << "Failed to publish query: " << e.what() << "\n";
+        return {};
+    }
     auto pythonStart = std::chrono::steady_clock::now();
     bool done = false;
 
@@ -229,7 +242,8 @@ std::vector<float> strToEmbed(std::string &str){
     }
 
     embed.close();
-    std::filesystem::remove(embedFile);
+    std::filesystem::remove(embedFile, ec);
+    std::filesystem::remove(doneFile, ec);
 
     return embedding;
     
