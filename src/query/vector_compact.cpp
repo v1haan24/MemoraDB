@@ -1,6 +1,6 @@
 #include "vector_compact.h"
 
-bool compactTable(Table& table, vecTable& vt, uint64_t timestamp){
+bool compactTable(Table& table, vecTable& vt, VectorIndex& idx, uint64_t timestamp){
     if(!table.compact(timestamp)) return false;
 
     std::vector<std::string> deletedPks;
@@ -10,6 +10,8 @@ bool compactTable(Table& table, vecTable& vt, uint64_t timestamp){
 
     if(!vt.compact(timestamp)) return false;
     if(!deletedPks.empty() && !vt.purge(deletedPks, timestamp)) return false;
+.
+    idx.buildIndex(vt);
 
     return true;
 }
