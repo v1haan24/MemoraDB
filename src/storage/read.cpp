@@ -59,3 +59,11 @@ std::vector<VCandidate> Table::scanLatestKeys(){
     }
     return keys;
 }
+
+std::vector<VCandidate> Table::activeKeys(){
+    std::vector<VCandidate> keys;
+    for(const auto& pk:history.list()){
+        for(const auto& v:history.getHistory(pk)) keys.push_back({pk,v.timestamp});
+    }
+    return keys;
+}
