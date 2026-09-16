@@ -72,6 +72,17 @@ bool Catalog::createTable(TableMeta& table){
         return true;
 }
 
+bool Catalog::dropTable(const std::string& tableName){
+    auto it=tables.find(tableName);
+    if(it==tables.end()) return false;
+    tables.erase(it); 
+
+    std::error_code ec;
+    std::filesystem::remove_all("data/"+tableName,ec);
+    if(ec){ std::cerr<<"Failed to remove data for table '"<<tableName<<"': "<<ec.message()<<"\n"; return false; }
+    return true;
+}
+
 Table* Catalog::getTable(const std::string& tableName){
         auto it=tables.find(tableName);
         if(it==tables.end()) return nullptr;
