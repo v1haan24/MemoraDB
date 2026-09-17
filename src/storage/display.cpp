@@ -11,9 +11,10 @@ void Table::describe(){
               <<std::setw(12)<<"Type"
               <<std::setw(10)<<"Size"
               <<std::setw(15)<<"Primary Key"
+              <<std::setw(15)<<"Semantic"
               <<'\n';
 
-    std::cout<<std::string(62,'-')<<'\n';
+    std::cout<<std::string(22+30+cns,'-')<<'\n';
 
     for(const auto& col:meta.columns){
         std::string type;
@@ -26,10 +27,11 @@ void Table::describe(){
         }
 
         std::cout<<std::left
-                  <<std::setw(25)<<col.name
+                  <<std::setw(cns)<<col.name
                   <<std::setw(12)<<type
                   <<std::setw(10)<<col.size
                   <<std::setw(15)<<(col.isPK?"YES":"NO")
+                  <<std::setw(15)<<(col.isSemantic?"YES":"NO")
                   <<'\n';
     }
 }

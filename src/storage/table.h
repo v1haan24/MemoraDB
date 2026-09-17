@@ -27,6 +27,7 @@ Row readPayload(std::fstream& file,const TableMeta& meta);
 
 void writeString(std::ostream& file,const std::string& s); //For .queue files
 void readString(std::istream& file,std::string& s);
+std::vector<float> strToEmbed(const std::string& str);
 
 bool validateValue(const std::string& value,const ColMeta& col);
 std::vector<Difference> compareRecords(const Record& before,const Record& after,const TableMeta& meta);

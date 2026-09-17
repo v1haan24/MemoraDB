@@ -29,6 +29,19 @@ target_include_directories(memora PUBLIC src)
 
 
 # ------------------------------------------------------------
+# MemoraDB interactive CLI
+# ------------------------------------------------------------
+
+add_executable(memora_cli
+    tools/memora.cpp
+)
+
+target_link_libraries(memora_cli PRIVATE memora)
+
+set_target_properties(memora_cli PROPERTIES OUTPUT_NAME memora)
+
+
+# ------------------------------------------------------------
 # Normal C++ tests
 # ------------------------------------------------------------
 
