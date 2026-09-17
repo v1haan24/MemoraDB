@@ -10,13 +10,15 @@ std::vector<SearchResult> temporalSemanticSearch(
     int k,
     const WhereClause* clause){
 
-    std::vector<Record> candidates = generateCandidates(table, mode, t1, t2);
+    std::vector<VCandidate> refined;
 
-    if(clause != nullptr){
-        candidates = where(candidates, table.getMeta(), *clause);
+    if(clause == nullptr){
+        refined = generateCandidateKeys(table, mode, t1, t2);
     }
-
-    std::vector<VCandidate> refined = refineCandidates(candidates, table.getMeta());
-
+    else{
+        std::vector<Record> candidates = generateCandidates(table, mode, t1, t2);
+        candidates = where(candidates, table.getMeta(), *clause);
+        refined = refineCandidates(candidates, table.getMeta());
+    }
     return idx.semanticSearch(refined, queryEmbedding, k);
 }

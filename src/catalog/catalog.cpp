@@ -78,21 +78,32 @@ Table* Catalog::getTable(const std::string& tableName){
         return &it->second;
 }
 
-TableMeta Catalog::readMetadata(const std::string& fileName){
-        std::ifstream file(fileName,std::ios::binary);
-        if(!file){std::cerr<<"Unable to open metadata file "<<fileName<<"\n"; return {}; }
-        TableMeta temp;
-        readBinary(file,temp.metadataSize);
-        file.read(temp.name,tns);
-        readBinary(file,temp.payloadSize);
+void Catalog::showTables(){
+    if(tables.empty()){
+        std::cout<<"No tables found.\n";
+        return;
+    }
+    for(auto &t:tables) std::cout<<t.first<<'\n';
+}
 
-        readBinary(file,temp.columnCount);
-        for(int i=0;i<temp.columnCount;i++){
-            ColMeta col;
-            readColumn(file,col);
-            temp.columns.push_back(col);
-        }
-        return temp;
+void Catalog::describeTable(const std::string& tableName){
+    Table* table=getTable(tableName);
+    if(table==nullptr){
+        std::cerr<<"Table '"<<tableName<<"' does not exist.\n";
+        return;
+    }
+    table->describe();
+}
+
+bool Catalog::dropTable(const std::string& tableName){
+    auto it=tables.find(tableName);
+    if(it==tables.end()) return false;
+    tables.erase(it); 
+
+    std::error_code ec;
+    std::filesystem::remove_all("data/"+tableName,ec);
+    if(ec){ std::cerr<<"Failed to remove data for table '"<<tableName<<"': "<<ec.message()<<"\n"; return false; }
+    return true;
 }
 
 void Catalog::loadTables(){
@@ -108,10 +119,19 @@ void Catalog::loadTables(){
     }
 }
 
-void Catalog::showTables(){
-    if(tables.empty()){
-        std::cout<<"No tables found.\n";
-        return;
-    }
-    for(auto &t:tables) std::cout<<t.first<<'\n';
+TableMeta Catalog::readMetadata(const std::string& fileName){
+        std::ifstream file(fileName,std::ios::binary);
+        if(!file){std::cerr<<"Unable to open metadata file "<<fileName<<"\n"; return {}; }
+        TableMeta temp;
+        readBinary(file,temp.metadataSize);
+        file.read(temp.name,tns);
+        readBinary(file,temp.payloadSize);
+
+        readBinary(file,temp.columnCount);
+        for(int i=0;i<temp.columnCount;i++){
+            ColMeta col;
+            readColumn(file,col);
+            temp.columns.push_back(col);
+        }
+        return temp;
 }
