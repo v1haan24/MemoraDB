@@ -8,7 +8,9 @@ std::vector<Record> generateCandidates(Table& table,CandidateMode mode,uint64_t 
         auto keys=table.getPrimaryKeys();
         for(const auto& pk:keys){
             auto records=table.selectBetween(pk,t1,t2);
-            candidates.insert(candidates.end(),records.begin(),records.end());
+            for(auto& record:records){
+                if(!record.deleted) candidates.push_back(std::move(record));
+            }
         }
         return candidates;
     }
