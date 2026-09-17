@@ -43,7 +43,6 @@ bool vecTable::insert(const std::string& pk, uint64_t timestamp, const float* em
     file.seekp(sizeof(int)+tns+sizeof(int), std::ios::beg);
     writeBinary(file,meta.recordCount);
 
-    file.close();
     return true;
 }
 

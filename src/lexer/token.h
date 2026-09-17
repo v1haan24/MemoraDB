@@ -8,7 +8,6 @@ enum class TokenType {
 
     CREATE,
     DROP,
-    DESCRIBE,
     TABLE,
 
     INSERT,

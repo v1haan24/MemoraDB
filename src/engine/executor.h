@@ -53,7 +53,6 @@ private:
 
     ExecResult run(const CreateTableStmt& s);
     ExecResult run(const DropTableStmt& s);
-    ExecResult run(const DescribeTableStmt& s);
     ExecResult run(const InsertStmt& s);
     ExecResult run(const UpdateStmt& s);
     ExecResult run(const DeleteStmt& s);

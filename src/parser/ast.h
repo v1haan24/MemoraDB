@@ -36,9 +36,6 @@ struct CreateTableStmt {
 struct DropTableStmt {
     std::string tableName;
 };
-struct DescribeTableStmt {
-    std::string tableName;
-};
 struct InsertStmt {
     std::string tableName;
     std::vector<Value> values; 
@@ -101,7 +98,6 @@ struct CompactStmt {
 using Statement = std::variant<
     CreateTableStmt,
     DropTableStmt,
-    DescribeTableStmt,
     InsertStmt,
     UpdateStmt,
     DeleteStmt,
