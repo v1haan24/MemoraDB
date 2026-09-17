@@ -6,6 +6,8 @@
 #include "../common/metadata.h"
 #include "../index/history_index.h"
 
+class vecTable; 
+class VectorIndex; 
 template<typename T>
 void writeBinary(std::ostream& file,const T& value){
     file.write(reinterpret_cast<const char*>(&value),sizeof(T));
@@ -61,7 +63,7 @@ public:
     bool insert(const Row& row);
     bool update(const Row& row);
     bool deleteRow(const std::string& pk);
-    bool compact(uint64_t timestamp);
+    bool compact(uint64_t timestamp, vecTable* vt=nullptr, VectorIndex* idx=nullptr);
     
     //temporal
     Record selectAsOf(const std::string& pk,uint64_t timestamp);
@@ -72,6 +74,13 @@ public:
     std::vector<Difference> evolution(const std::string& pk,uint64_t t1,uint64_t t2);
     bool rollback(const std::string& pk,uint64_t timestamp); //row roll-back
     bool rollback(uint64_t timestamp); //table roll-back
+    bool isDeleted(uint64_t offset);
+    std::vector<VCandidate> scanLatestKeys();
+    std::vector<VCandidate> snapshotKeys(uint64_t timestamp);
+    std::vector<VCandidate> selectBetweenKeys(const std::string& pk,uint64_t t1,uint64_t t2);
+    std::vector<VCandidate> showHistoryKeys(const std::string& pk);
+    VCandidate selectAsOfKeys(const std::string& pk,uint64_t timestamp);
+    std::vector<VCandidate> activeKeys(); 
 
     //misc
     std::vector<std::string> getPrimaryKeys();
@@ -80,6 +89,7 @@ public:
     Record readRecord(uint64_t offset);
     void printDatabase();
     TableMeta& getMeta(){ return meta;}
+    void describe();
 
     //semantic
     bool writeQueue(std::string pk,uint64_t timestamp,const Row& row);

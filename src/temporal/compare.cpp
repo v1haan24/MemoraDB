@@ -20,22 +20,20 @@ std::vector<Difference> compareRecords(const Record& r1,const Record& r2,const T
     }
     return ans;
 }
-
 std::vector<Difference> Table::compare(const std::string& pk,uint64_t t1,uint64_t t2){
     if(t1>t2){ std::cerr<<"Invalid time range.\n"; return {};}
-    Record r1=selectAsOf(pk,t1), r2=selectAsOf(pk,t2);
-    if(r1.row.values.empty() || r2.row.values.empty()) return {};
-    return compareRecords(r1,r2,meta);
+    std::vector<Record> recs=selectBetween(pk,t1,t2);
+    if(recs.empty()) return {};
+    return compareRecords(recs.front(),recs.back(),meta);
 }
-
 std::vector<Difference> Table::evolution(const std::string& pk,uint64_t t1,uint64_t t2){
     if(t1>t2){ std::cerr<<"Invalid time range.\n"; return {};}
     std::vector<Difference> ans;
     if(!history.contains(pk)){ std::cerr<<"No row found.\n"; return {};}
     const std::vector<RecordVersion>& hist=history.getHistory(pk);
     const RecordVersion* start=history.latestBefore(pk,t1);
-    if(start==nullptr) return ans;
-    int idx=start-hist.data();
+    int idx = (start != nullptr) ? static_cast<int>(start - hist.data()) : 0;
+    if(idx >= static_cast<int>(hist.size()) || hist[idx].timestamp > t2) return ans;
     while(idx+1<hist.size() && hist[idx+1].timestamp<=t2){
         Record r1=readRecord(hist[idx].offset);
         Record r2=readRecord(hist[idx+1].offset);

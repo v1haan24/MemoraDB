@@ -1,5 +1,38 @@
 #include "table.h"
 #include <iostream>
+#include <iomanip>
+
+void Table::describe(){
+    std::cout<<"Table: "<<meta.name<<'\n';
+    std::cout<<"Columns: "<< meta.columnCount<<"\n\n";
+
+    std::cout<<std::left
+              <<std::setw(cns)<<"Name"
+              <<std::setw(12)<<"Type"
+              <<std::setw(10)<<"Size"
+              <<std::setw(15)<<"Primary Key"
+              <<'\n';
+
+    std::cout<<std::string(62,'-')<<'\n';
+
+    for(const auto& col:meta.columns){
+        std::string type;
+
+        switch(col.type){
+            case INT:    type="INT";    break;
+            case FLOAT:  type="FLOAT";  break;
+            case STRING: type="STRING"; break;
+            case BOOL:   type="BOOL";   break;
+        }
+
+        std::cout<<std::left
+                  <<std::setw(25)<<col.name
+                  <<std::setw(12)<<type
+                  <<std::setw(10)<<col.size
+                  <<std::setw(15)<<(col.isPK?"YES":"NO")
+                  <<'\n';
+    }
+}
 
 void print(const Row& row){
     for(int i=0;i<row.values.size();i++){
