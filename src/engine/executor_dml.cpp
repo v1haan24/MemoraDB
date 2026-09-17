@@ -55,11 +55,19 @@ ExecResult Executor::run(const DropTableStmt& s) {
     if (!catalog.getTable(s.tableName)) {
         return ExecResult::Error("No such table: '" + s.tableName + "'");
     }
-    return ExecResult::Error(
-        "DROP TABLE is parsed but not executable yet: Catalog has no dropTable() "
-        "and holds an open file handle per table, so '" + s.tableName +
-        "' can't be removed safely from here. Adding Catalog::dropTable() "
-        "(close handle, erase from map, remove_all the directory) would wire this up.");
+    if (!catalog.dropTable(s.tableName)) {
+        return ExecResult::Error("Failed to drop table '" + s.tableName + "'");
+    }
+    vectors.erase(s.tableName);
+    return ExecResult::Ok("Dropped table '" + s.tableName + "'");
+}
+ExecResult Executor::run(const DescribeTableStmt& s) {
+    ExecResult err;
+    Table* table = requireTable(s.tableName, err);
+    if (!table) return err;
+
+    catalog.describeTable(s.tableName);
+    return ExecResult::Ok("Described table '" + s.tableName + "'");
 }
 ExecResult Executor::run(const InsertStmt& s) {
     ExecResult err;

@@ -18,5 +18,5 @@ public:
     Table* getTable(const std::string& tableName);
     void showTables();
     void describeTable(const std::string& tableName);
-    bool loadTable(const std::string& tableName);
+     bool loadTable(const std::string& tableName);
 };
