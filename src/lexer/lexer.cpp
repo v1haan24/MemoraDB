@@ -64,6 +64,7 @@ TokenType Lexer::keywordType(const std::string& word) const {
         // DDL
         {"CREATE", TokenType::CREATE}, {"DROP", TokenType::DROP}, {"DESCRIBE", TokenType::DESCRIBE},
         {"TABLE", TokenType::TABLE},
+        {"CREATE", TokenType::CREATE}, {"DROP", TokenType::DROP}, {"TABLE", TokenType::TABLE},
         {"INSERT", TokenType::INSERT}, {"INTO", TokenType::INTO}, {"VALUES", TokenType::VALUES},
         {"UPDATE", TokenType::UPDATE}, {"SET", TokenType::SET},
         {"DELETE", TokenType::DELETE},
@@ -269,6 +270,7 @@ std::string tokenTypeToString(TokenType type) {
 
         {TokenType::CREATE, "CREATE"}, {TokenType::DROP, "DROP"}, {TokenType::DESCRIBE, "DESCRIBE"},
         {TokenType::TABLE, "TABLE"},
+        {TokenType::CREATE, "CREATE"}, {TokenType::DROP, "DROP"}, {TokenType::TABLE, "TABLE"},
         {TokenType::INSERT, "INSERT"}, {TokenType::INTO, "INTO"}, {TokenType::VALUES, "VALUES"},
         {TokenType::UPDATE, "UPDATE"}, {TokenType::SET, "SET"},
         {TokenType::DELETE, "DELETE"},

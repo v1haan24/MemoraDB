@@ -68,6 +68,11 @@ ExecResult Executor::run(const DescribeTableStmt& s) {
 
     catalog.describeTable(s.tableName);
     return ExecResult::Ok("Described table '" + s.tableName + "'");
+    return ExecResult::Error(
+        "DROP TABLE is parsed but not executable yet: Catalog has no dropTable() "
+        "and holds an open file handle per table, so '" + s.tableName +
+        "' can't be removed safely from here. Adding Catalog::dropTable() "
+        "(close handle, erase from map, remove_all the directory) would wire this up.");
 }
 ExecResult Executor::run(const InsertStmt& s) {
     ExecResult err;

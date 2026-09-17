@@ -17,6 +17,7 @@ Statement Parser::parseStatement() {
             const Token& actual = peek();
             throw ParseError(
                 "Expected the start of a statement (CREATE, DROP, DESCRIBE, INSERT, UPDATE, DELETE, "
+                "Expected the start of a statement (CREATE, DROP, INSERT, UPDATE, DELETE, "
                 "SELECT, COMPARE, EVOLUTION, HISTORY, ROLLBACK, or COMPACT) but got " +
                     tokenTypeToString(actual.type) +
                     (actual.value.empty() ? "" : " ('" + actual.value + "')"),
