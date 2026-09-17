@@ -62,6 +62,8 @@ Token Lexer::makeToken(TokenType type, const std::string& value,
 TokenType Lexer::keywordType(const std::string& word) const {
     static const std::unordered_map<std::string, TokenType> keywords = {
         // DDL
+        {"CREATE", TokenType::CREATE}, {"DROP", TokenType::DROP}, {"DESCRIBE", TokenType::DESCRIBE},
+        {"TABLE", TokenType::TABLE},
         {"CREATE", TokenType::CREATE}, {"DROP", TokenType::DROP}, {"TABLE", TokenType::TABLE},
         {"INSERT", TokenType::INSERT}, {"INTO", TokenType::INTO}, {"VALUES", TokenType::VALUES},
         {"UPDATE", TokenType::UPDATE}, {"SET", TokenType::SET},
@@ -266,6 +268,8 @@ std::string tokenTypeToString(TokenType type) {
     static const std::unordered_map<TokenType, std::string> names = {
         {TokenType::END_OF_FILE, "END_OF_FILE"}, {TokenType::UNKNOWN, "UNKNOWN"},
 
+        {TokenType::CREATE, "CREATE"}, {TokenType::DROP, "DROP"}, {TokenType::DESCRIBE, "DESCRIBE"},
+        {TokenType::TABLE, "TABLE"},
         {TokenType::CREATE, "CREATE"}, {TokenType::DROP, "DROP"}, {TokenType::TABLE, "TABLE"},
         {TokenType::INSERT, "INSERT"}, {TokenType::INTO, "INTO"}, {TokenType::VALUES, "VALUES"},
         {TokenType::UPDATE, "UPDATE"}, {TokenType::SET, "SET"},

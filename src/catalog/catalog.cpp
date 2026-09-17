@@ -127,6 +127,38 @@ TableMeta Catalog::readMetadata(const std::string& fileName){
         file.read(temp.name,tns);
         readBinary(file,temp.payloadSize);
 
+void Catalog::describeTable(const std::string& tableName){
+    Table* table=getTable(tableName);
+    if(table==nullptr){
+        std::cerr<<"Table '"<<tableName<<"' does not exist.\n";
+        return;
+    }
+    table->describe();
+}
+
+bool Catalog::dropTable(const std::string& tableName){
+    auto it=tables.find(tableName);
+    if(it==tables.end()) return false;
+    tables.erase(it); 
+
+    std::error_code ec;
+    std::filesystem::remove_all("data/"+tableName,ec);
+    if(ec){ std::cerr<<"Failed to remove data for table '"<<tableName<<"': "<<ec.message()<<"\n"; return false; }
+    return true;
+}
+
+bool Catalog::loadTable(const std::string& tableName){
+    if(exist(tableName))
+        return true;
+
+TableMeta Catalog::readMetadata(const std::string& fileName){
+        std::ifstream file(fileName,std::ios::binary);
+        if(!file){std::cerr<<"Unable to open metadata file "<<fileName<<"\n"; return {}; }
+        TableMeta temp;
+        readBinary(file,temp.metadataSize);
+        file.read(temp.name,tns);
+        readBinary(file,temp.payloadSize);
+
         readBinary(file,temp.columnCount);
         for(int i=0;i<temp.columnCount;i++){
             ColMeta col;
@@ -135,11 +167,6 @@ TableMeta Catalog::readMetadata(const std::string& fileName){
         }
         return temp;
 }
-
-bool Catalog::loadTable(const std::string& tableName){
-    if(exist(tableName))
-        return true;
-
     std::filesystem::path filePath = std::filesystem::path("data") / tableName / "data.db";
     if(!std::filesystem::exists(filePath)) return false;
     TableMeta meta = readMetadata(filePath.string());

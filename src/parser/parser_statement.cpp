@@ -3,6 +3,7 @@ Statement Parser::parseStatement() {
     switch (peek().type) {
         case TokenType::CREATE:    return parseCreateTable();
         case TokenType::DROP:      return parseDropTable();
+        case TokenType::DESCRIBE:  return parseDescribeTable();
         case TokenType::INSERT:    return parseInsert();
         case TokenType::UPDATE:    return parseUpdate();
         case TokenType::DELETE:    return parseDelete();
@@ -15,6 +16,7 @@ Statement Parser::parseStatement() {
         default: {
             const Token& actual = peek();
             throw ParseError(
+                "Expected the start of a statement (CREATE, DROP, DESCRIBE, INSERT, UPDATE, DELETE, "
                 "Expected the start of a statement (CREATE, DROP, INSERT, UPDATE, DELETE, "
                 "SELECT, COMPARE, EVOLUTION, HISTORY, ROLLBACK, or COMPACT) but got " +
                     tokenTypeToString(actual.type) +

@@ -76,3 +76,12 @@ DropTableStmt Parser::parseDropTable() {
     stmt.tableName = nameTok.value;
     return stmt;
 }
+DescribeTableStmt Parser::parseDescribeTable() {
+    expect(TokenType::DESCRIBE, "");
+    expect(TokenType::TABLE, "after DESCRIBE");
+    const Token& nameTok = expect(TokenType::IDENTIFIER, "as the table name after DESCRIBE TABLE");
+
+    DescribeTableStmt stmt;
+    stmt.tableName = nameTok.value;
+    return stmt;
+}
