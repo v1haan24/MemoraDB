@@ -38,6 +38,8 @@ int main(){
     std::cout << "========================================" <<std::endl;
     std::cout << "Watching: " << dir << std::endl;
 
+    Catalog catalog;
+
     while(true){
         /*
             A tasks.queue may already exist if this worker restarted after
@@ -200,13 +202,20 @@ int main(){
         for(int i = 0; i < records.size(); ++i)
             groups[records[i].tableName].push_back(i);
 
-        Catalog catalog;
+        
         vecMeta vm;
 
         int inserted = 0;
 
         for(const auto& [tableName, indices] : groups){
+
             Table* table = catalog.getTable(tableName);
+
+            if(!table){
+                std::cout << "Table '" << tableName << "' not found in cached catalog. Refreshing...\n";
+                if(catalog.loadTable(tableName))
+                    table = catalog.getTable(tableName);
+            }
 
             if(!table){
                 std::cerr << "Table '" << tableName << "' no longer exists in the catalog.\n";
