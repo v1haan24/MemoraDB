@@ -17,4 +17,5 @@ public:
     bool dropTable(const std::string& tableName);
     Table* getTable(const std::string& tableName);
     void showTables();
+    void describeTable(const std::string& tableName);
 };

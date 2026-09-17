@@ -89,6 +89,7 @@ public:
     Record readRecord(uint64_t offset);
     void printDatabase();
     TableMeta& getMeta(){ return meta;}
+    void describe();
 
     //semantic
     bool writeQueue(std::string pk,uint64_t timestamp,const Row& row);

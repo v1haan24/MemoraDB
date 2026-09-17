@@ -72,6 +72,29 @@ bool Catalog::createTable(TableMeta& table){
         return true;
 }
 
+Table* Catalog::getTable(const std::string& tableName){
+        auto it=tables.find(tableName);
+        if(it==tables.end()) return nullptr;
+        return &it->second;
+}
+
+void Catalog::showTables(){
+    if(tables.empty()){
+        std::cout<<"No tables found.\n";
+        return;
+    }
+    for(auto &t:tables) std::cout<<t.first<<'\n';
+}
+
+void Catalog::describeTable(const std::string& tableName){
+    Table* table=getTable(tableName);
+    if(table==nullptr){
+        std::cerr<<"Table '"<<tableName<<"' does not exist.\n";
+        return;
+    }
+    table->describe();
+}
+
 bool Catalog::dropTable(const std::string& tableName){
     auto it=tables.find(tableName);
     if(it==tables.end()) return false;
@@ -83,10 +106,17 @@ bool Catalog::dropTable(const std::string& tableName){
     return true;
 }
 
-Table* Catalog::getTable(const std::string& tableName){
-        auto it=tables.find(tableName);
-        if(it==tables.end()) return nullptr;
-        return &it->second;
+void Catalog::loadTables(){
+    tables.clear();
+    if(!std::filesystem::exists("data")) return;
+    for(const auto& entry:std::filesystem::directory_iterator("data")){
+            if(!entry.is_directory()) continue;
+            std::filesystem::path filePath=entry.path()/"data.db";
+            if(!std::filesystem::exists(filePath)) continue;
+            TableMeta meta=readMetadata(filePath.string());
+            if(meta.name[0]=='\0') continue;
+            tables.emplace(meta.name,Table(meta));
+    }
 }
 
 TableMeta Catalog::readMetadata(const std::string& fileName){
@@ -104,25 +134,4 @@ TableMeta Catalog::readMetadata(const std::string& fileName){
             temp.columns.push_back(col);
         }
         return temp;
-}
-
-void Catalog::loadTables(){
-    tables.clear();
-    if(!std::filesystem::exists("data")) return;
-    for(const auto& entry:std::filesystem::directory_iterator("data")){
-            if(!entry.is_directory()) continue;
-            std::filesystem::path filePath=entry.path()/"data.db";
-            if(!std::filesystem::exists(filePath)) continue;
-            TableMeta meta=readMetadata(filePath.string());
-            if(meta.name[0]=='\0') continue;
-            tables.emplace(meta.name,Table(meta));
-    }
-}
-
-void Catalog::showTables(){
-    if(tables.empty()){
-        std::cout<<"No tables found.\n";
-        return;
-    }
-    for(auto &t:tables) std::cout<<t.first<<'\n';
 }
