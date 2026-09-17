@@ -72,6 +72,26 @@ std::string Executor::valueToString(const Value& v) {
     return v.raw;
 }
 
+// Primary keys are stored under a canonical string: Table::getPrimaryKey()
+// normalizes INT/FLOAT columns via stoi/stof + to_string before they ever hit
+// the history index (so "07" and "7" land on the same key). Anything that
+// looks a stored/scanned pk up directly -- like resolvePks()'s fast path --
+// has to normalize a literal the same way first, or an equality lookup can
+// silently miss a row whose key was written with different (but numerically
+// identical) formatting than the query literal.
+std::string Executor::canonicalPkValue(const Value& v, DataType pkType) {
+    const std::string raw = valueToString(v);
+    try {
+        if (pkType == DataType::INT)   return std::to_string(std::stoi(raw));
+        if (pkType == DataType::FLOAT) return std::to_string(std::stof(raw));
+    } catch (const std::exception&) {
+        // Not parseable as the column's numeric type; fall through and let
+        // the value be used as-is so the caller's later validation/lookup
+        // reports the real error instead of us masking it here.
+    }
+    return raw;
+}
+
 bool Executor::toOperator(CompareOp op, Operator& out) {
     switch (op) {
         case CompareOp::EQ: out = EQ; return true;
@@ -129,7 +149,7 @@ std::vector<std::string> Executor::resolvePks(Table& table, const Condition& con
     }
 
     if (col == pkCol && cond.op == CompareOp::EQ) {
-        return { valueToString(cond.value) };
+        return { canonicalPkValue(cond.value, meta.columns[pkCol].type) };
     }
 
     WhereClause clause;
@@ -149,13 +169,28 @@ std::vector<std::string> Executor::resolvePks(Table& table, const Condition& con
 //
 // Opened lazily: only tables that actually declared a SEMANTIC column have a
 // .vec file, and building the index is expensive enough not to do per-statement.
+//
+// Refreshed on every call: embeddings are written asynchronously by a
+// separate process (the queue + ml_worker.py / embedMake.cpp pipeline), not
+// by this Executor, so our cached vecTable's in-memory record count can lag
+// what's actually on disk. Re-reading the .vec header and rebuilding the
+// index here -- rather than only on COMPACT -- means SIMILAR TO always sees
+// every embedding that has landed so far. Rebuilding is just an index-sized
+// hash map build plus a linear scan of the (small, fixed-width) header
+// records, so this stays cheap unless recordCount gets huge.
 // ============================================================================
 Executor::VectorHandles* Executor::vectorsFor(Table& table) {
     const TableMeta& meta = table.getMeta();
     std::string name(meta.name);
 
     auto it = vectors.find(name);
-    if (it != vectors.end()) return it->second.vt ? &it->second : nullptr;
+    if (it != vectors.end()) {
+        if (!it->second.vt) return nullptr;
+        vecMeta reader;
+        it->second.vt->getMeta() = reader.readMetadata(name + ".vec");
+        it->second.idx->buildIndex(*it->second.vt);
+        return &it->second;
+    }
 
     bool hasSemantic = false;
     for (int i = 0; i < meta.columnCount; ++i) {

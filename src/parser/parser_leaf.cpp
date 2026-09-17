@@ -1,28 +1,63 @@
 #include "parser.h"
+
+// Civil (Gregorian) leap-year rule: divisible by 4, except centuries, unless
+// also divisible by 400. Needed so "2023-02-29" is rejected but "2024-02-29"
+// and "2000-02-29" are accepted while "1900-02-29" is not.
+static bool isLeapYear(int year) {
+    return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+}
+
+static int daysInMonth(int year, int month) {
+    static const int lengths[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    if (month < 1 || month > 12) return 31; // caller validates month range separately
+    if (month == 2 && isLeapYear(year)) return 29;
+    return lengths[month - 1];
+}
+
 Value Parser::parseValue() {
+    // Unary minus: only meaningful directly in front of a numeric literal.
+    // (MINUS is also used as the YYYY-MM-DD separator in parseDateLiteral,
+    // but that path calls expect(INTEGER_LITERAL) directly and never goes
+    // through parseValue, so there's no ambiguity here.)
+    bool negative = false;
+    Token minusTok;
+    if (check(TokenType::MINUS)) {
+        minusTok = advance();
+        negative = true;
+    }
+
     if (check(TokenType::INTEGER_LITERAL)) {
         const Token& tok = advance();
         Value v;
         v.kind = Value::Kind::INT;
-        v.raw = tok.value;
-        v.intVal = std::stoll(tok.value);
+        v.raw = negative ? "-" + tok.value : tok.value;
+        v.intVal = std::stoll(v.raw);
         return v;
     }
     if (check(TokenType::FLOAT_LITERAL)) {
         const Token& tok = advance();
         Value v;
         v.kind = Value::Kind::FLOAT;
-        v.raw = tok.value;
-        v.floatVal = std::stod(tok.value);
+        v.raw = negative ? "-" + tok.value : tok.value;
+        v.floatVal = std::stod(v.raw);
         return v;
     }
-    if (check(TokenType::STRING_LITERAL)) {
+    if (!negative && check(TokenType::STRING_LITERAL)) {
         const Token& tok = advance();
         Value v;
         v.kind = Value::Kind::STRING;
         v.raw = tok.value;
         v.strVal = tok.value;
         return v;
+    }
+
+    if (negative) {
+        const Token& actual = peek();
+        throw ParseError(
+            "Expected an integer or float literal after unary '-' but got " +
+                tokenTypeToString(actual.type) +
+                " at line " + std::to_string(actual.line) + ", column " + std::to_string(actual.column),
+            minusTok.line, minusTok.column);
     }
 
     const Token& actual = peek();
@@ -48,9 +83,12 @@ DateLiteral Parser::parseDateLiteral() {
                               " in date literal (must be between 1 and 12)",
                           monthTok.line, monthTok.column);
     }
-    if (date.day < 1 || date.day > 31) {
+    int maxDay = daysInMonth(date.year, date.month);
+    if (date.day < 1 || date.day > maxDay) {
         throw ParseError("Invalid day " + std::to_string(date.day) +
-                              " in date literal (must be between 1 and 31)",
+                              " in date literal (month " + std::to_string(date.month) +
+                              " of year " + std::to_string(date.year) +
+                              " has " + std::to_string(maxDay) + " days)",
                           dayTok.line, dayTok.column);
     }
 

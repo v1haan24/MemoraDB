@@ -68,6 +68,7 @@ private:
     static int findColumn(const TableMeta& meta, const std::string& name);
     static int primaryKeyColumn(const TableMeta& meta);
     static std::string valueToString(const Value& v);
+    static std::string canonicalPkValue(const Value& v, DataType pkType);
     static bool toOperator(CompareOp op, Operator& out);
     static bool buildWhere(const TableMeta& meta, const Condition& cond,
                            WhereClause& out, ExecResult& err);

@@ -1,4 +1,5 @@
 #include "executor.h"
+#include "../query/vector_compact.h"
 
 // ============================================================================
 // COMPARE <table> WHERE <cond> BETWEEN <d1> AND <d2>
@@ -128,9 +129,12 @@ ExecResult Executor::run(const RollbackStmt& s) {
 // ============================================================================
 // COMPACT TABLE <t> TO <date>
 //
-// Passes the vector handles through when the table has them, so the main and
-// vector compactions run together inside Table::compact() rather than the
-// vector side being left stale.
+// Runs the vector-aware compactTable() wrapper when the table has a vector
+// index, so the main compaction, the .vec purge of permanently-deleted
+// primary keys, and the index rebuild all happen together (compactTable()
+// was previously declared and implemented but never actually called --
+// COMPACT ran the plain Table::compact() and the .vec file's dead-row
+// embeddings were never reclaimed).
 // ============================================================================
 ExecResult Executor::run(const CompactStmt& s) {
     ExecResult err;
@@ -140,12 +144,9 @@ ExecResult Executor::run(const CompactStmt& s) {
     uint64_t ts = dayEndMs(s.toDate);
     VectorHandles* vh = vectorsFor(*table);
 
-    bool ok = vh ? table->compact(ts, vh->vt.get(), vh->idx.get())
+    bool ok = vh ? compactTable(*table, *vh->vt, *vh->idx, ts)
                  : table->compact(ts);
     if (!ok) return ExecResult::Error("Compaction of '" + s.tableName + "' failed");
-
-    // Compaction renumbers vector ids, so the cached index is stale now.
-    if (vh) vh->idx->buildIndex(*vh->vt);
 
     return ExecResult::Ok("Compacted '" + s.tableName + "'" +
                           (vh ? " (with vector table)" : ""));
