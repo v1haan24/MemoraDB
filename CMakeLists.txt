@@ -102,6 +102,7 @@ endif()
 add_executable(memora_cli
     src/cli/repl.cpp
     src/cli/terminal.cpp
+    memora.rc
 )
 target_link_libraries(memora_cli PRIVATE memora)
 target_compile_definitions(memora_cli PRIVATE MEMORA_MODEL_DIR="${MEMORA_MODEL_DIR}")

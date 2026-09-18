@@ -3,7 +3,11 @@ data/
 README.md
 release/
 *.zip
+*.exe
 .vscode/
 .idea/
 *.user
-*.suo
+*.suoWW
+installer.iss
+installer/
+memora.rc
