@@ -1,0 +1,7 @@
+﻿build/
+data/
+README.md
+.vscode/
+.idea/
+*.user
+*.suo
