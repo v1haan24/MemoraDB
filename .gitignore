@@ -1,6 +1,8 @@
 ﻿build/
 data/
 README.md
+release/
+*.zip
 .vscode/
 .idea/
 *.user
