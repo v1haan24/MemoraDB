@@ -85,3 +85,9 @@ DescribeTableStmt Parser::parseDescribeTable() {
     stmt.tableName = nameTok.value;
     return stmt;
 }
+ShowTablesStmt Parser::parseShowTables() {
+    expect(TokenType::SHOW, "");
+    expect(TokenType::TABLES, "after SHOW");
+
+    return ShowTablesStmt{};
+}

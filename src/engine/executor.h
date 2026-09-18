@@ -54,6 +54,7 @@ private:
     ExecResult run(const CreateTableStmt& s);
     ExecResult run(const DropTableStmt& s);
     ExecResult run(const DescribeTableStmt& s);
+    ExecResult run(const ShowTablesStmt& s);
     ExecResult run(const InsertStmt& s);
     ExecResult run(const UpdateStmt& s);
     ExecResult run(const DeleteStmt& s);
@@ -63,7 +64,7 @@ private:
     ExecResult run(const HistoryStmt& s);
     ExecResult run(const RollbackStmt& s);
     ExecResult run(const CompactStmt& s);
-
+    
     Table* requireTable(const std::string& name, ExecResult& err);
     static int findColumn(const TableMeta& meta, const std::string& name);
     static int primaryKeyColumn(const TableMeta& meta);

@@ -36,6 +36,7 @@ public:
     ColumnDef parseColumnDef();
     DropTableStmt parseDropTable();
     DescribeTableStmt parseDescribeTable();
+    ShowTablesStmt parseShowTables();
 
     InsertStmt parseInsert();
     UpdateStmt parseUpdate();

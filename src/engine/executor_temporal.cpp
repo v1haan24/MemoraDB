@@ -1,17 +1,10 @@
 #include "executor.h"
 #include "../query/vector_compact.h"
 
-// ============================================================================
-// COMPARE <table> WHERE <cond> BETWEEN <d1> AND <d2>
-//
-// Table::compare(pk,t1,t2) works one row at a time, so the WHERE is first
-// resolved to matching primary keys and the diffs concatenated.
-// ============================================================================
 ExecResult Executor::run(const CompareStmt& s) {
     ExecResult err;
     Table* table = requireTable(s.tableName, err);
     if (!table) return err;
-
     uint64_t t1 = dayStartMs(s.rangeStart);
     uint64_t t2 = dayEndMs(s.rangeEnd);
     if (t1 > t2) return ExecResult::Error("COMPARE range starts after it ends");
@@ -30,13 +23,6 @@ ExecResult Executor::run(const CompareStmt& s) {
                 std::to_string(pks.size()) + " row(s)";
     return r;
 }
-
-// ============================================================================
-// EVOLUTION <table> WHERE <cond> BETWEEN <d1> AND <d2>
-//
-// Same shape as COMPARE, but Table::evolution() walks every intermediate
-// version instead of only diffing the endpoints.
-// ============================================================================
 ExecResult Executor::run(const EvolutionStmt& s) {
     ExecResult err;
     Table* table = requireTable(s.tableName, err);
@@ -60,13 +46,6 @@ ExecResult Executor::run(const EvolutionStmt& s) {
                 std::to_string(pks.size()) + " row(s)";
     return r;
 }
-
-// ============================================================================
-// HISTORY <table> WHERE <cond>
-//
-// Returns every stored version of the matching row(s), newest-to-oldest as the
-// engine stores them.
-// ============================================================================
 ExecResult Executor::run(const HistoryStmt& s) {
     ExecResult err;
     Table* table = requireTable(s.tableName, err);
@@ -87,26 +66,17 @@ ExecResult Executor::run(const HistoryStmt& s) {
                 std::to_string(pks.size()) + " row(s)";
     return r;
 }
-
-// ============================================================================
-// ROLLBACK
-//   ROLLBACK TABLE <t> TO <date>          -> whole-table rollback
-//   ROLLBACK <t> WHERE <cond> TO <date>   -> per-row rollback
-// ============================================================================
 ExecResult Executor::run(const RollbackStmt& s) {
     ExecResult err;
     Table* table = requireTable(s.tableName, err);
     if (!table) return err;
-
     uint64_t ts = dayEndMs(s.toDate);
-
     if (s.wholeTable) {
         if (!table->rollback(ts)) {
             return ExecResult::Error("Rollback of table '" + s.tableName + "' failed");
         }
         return ExecResult::Ok("Table '" + s.tableName + "' rolled back");
     }
-
     if (!s.where) {
         return ExecResult::Error("ROLLBACK without TABLE requires a WHERE clause");
     }
@@ -125,22 +95,10 @@ ExecResult Executor::run(const RollbackStmt& s) {
     }
     return ExecResult::Ok(std::to_string(rolled) + " row(s) rolled back");
 }
-
-// ============================================================================
-// COMPACT TABLE <t> TO <date>
-//
-// Runs the vector-aware compactTable() wrapper when the table has a vector
-// index, so the main compaction, the .vec purge of permanently-deleted
-// primary keys, and the index rebuild all happen together (compactTable()
-// was previously declared and implemented but never actually called --
-// COMPACT ran the plain Table::compact() and the .vec file's dead-row
-// embeddings were never reclaimed).
-// ============================================================================
 ExecResult Executor::run(const CompactStmt& s) {
     ExecResult err;
     Table* table = requireTable(s.tableName, err);
     if (!table) return err;
-
     uint64_t ts = dayEndMs(s.toDate);
     VectorHandles* vh = vectorsFor(*table);
 

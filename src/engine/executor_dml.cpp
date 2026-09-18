@@ -69,6 +69,11 @@ ExecResult Executor::run(const DescribeTableStmt& s) {
     catalog.describeTable(s.tableName);
     return ExecResult::Ok("Described table '" + s.tableName + "'");
 }
+ExecResult Executor::run(const ShowTablesStmt& s) {
+    (void)s;
+    catalog.showTables();
+    return ExecResult::Ok("Showed tables");
+}
 ExecResult Executor::run(const InsertStmt& s) {
     ExecResult err;
     Table* table = requireTable(s.tableName, err);
