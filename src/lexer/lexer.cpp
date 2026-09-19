@@ -3,16 +3,9 @@
 #include <stdexcept>
 #include <unordered_map>
 
-// ================================================================
-// Constructor
-// ================================================================
-
 Lexer::Lexer(const std::string& source)
     : input(source), position(0), line(1), column(1) {}
 
-// ================================================================
-// Character helpers
-// ================================================================
 
 char Lexer::currentChar() const {
     return isAtEnd() ? '\0' : input[position];
@@ -46,53 +39,36 @@ bool Lexer::isIdentifierPart(char c) const {
     return std::isalnum(static_cast<unsigned char>(c)) || c == '_';
 }
 
-// ================================================================
-// Token creation
-// ================================================================
-
 Token Lexer::makeToken(TokenType type, const std::string& value,
                         int startLine, int startColumn) {
     return Token{type, value, startLine, startColumn};
 }
 
-// ================================================================
-// Keyword lookup
-// ================================================================
-
 TokenType Lexer::keywordType(const std::string& word) const {
     static const std::unordered_map<std::string, TokenType> keywords = {
-        // DDL
         {"CREATE", TokenType::CREATE}, {"DROP", TokenType::DROP}, {"DESCRIBE", TokenType::DESCRIBE},
-        {"TABLE", TokenType::TABLE},
+        {"TABLE", TokenType::TABLE}, {"SHOW", TokenType::SHOW}, {"TABLES", TokenType::TABLES},
         {"INSERT", TokenType::INSERT}, {"INTO", TokenType::INTO}, {"VALUES", TokenType::VALUES},
         {"UPDATE", TokenType::UPDATE}, {"SET", TokenType::SET},
         {"DELETE", TokenType::DELETE},
         {"SELECT", TokenType::SELECT}, {"FROM", TokenType::FROM},
-        // Filtering / sorting
         {"WHERE", TokenType::WHERE}, {"ORDER", TokenType::ORDER}, {"BY", TokenType::BY},
         {"LIMIT", TokenType::LIMIT}, {"ASC", TokenType::ASC}, {"DESC", TokenType::DESC},
-        {"AND", TokenType::AND},   // needed by: BETWEEN <date> AND <date>
-        // Schema
+        {"AND", TokenType::AND},   
         {"PRIMARY", TokenType::PRIMARY}, {"KEY", TokenType::KEY},
         {"INT", TokenType::INT}, {"FLOAT", TokenType::FLOAT},
         {"STRING", TokenType::STRING}, {"BOOL", TokenType::BOOL},
         {"SEMANTIC", TokenType::SEMANTIC},
-        // Temporal
         {"AS", TokenType::AS}, {"OF", TokenType::OF},
         {"BETWEEN", TokenType::BETWEEN}, {"SNAPSHOT", TokenType::SNAPSHOT},
         {"COMPARE", TokenType::COMPARE}, {"EVOLUTION", TokenType::EVOLUTION}, {"HISTORY", TokenType::HISTORY},
         {"ROLLBACK", TokenType::ROLLBACK}, {"TO", TokenType::TO}, {"COMPACT", TokenType::COMPACT},
-        // Semantic
         {"SIMILAR", TokenType::SIMILAR},
     };
 
     auto it = keywords.find(word);
     return it != keywords.end() ? it->second : TokenType::IDENTIFIER;
 }
-
-// ================================================================
-// Identifier / keyword scanner
-// ================================================================
 
 Token Lexer::scanIdentifierOrKeyword() {
     int startLine = line, startColumn = column;
@@ -108,10 +84,6 @@ Token Lexer::scanIdentifierOrKeyword() {
 
     return makeToken(keywordType(upper), value, startLine, startColumn);
 }
-
-// ================================================================
-// Number scanner
-// ================================================================
 
 Token Lexer::scanNumber() {
     int startLine = line, startColumn = column;
@@ -137,22 +109,15 @@ Token Lexer::scanNumber() {
                       value, startLine, startColumn);
 }
 
-// ================================================================
-// String scanner
-//
-// Supports \n \t \\ \" \' ; an unrecognized escape keeps the escaped
-// character as-is.
-// ================================================================
-
 Token Lexer::scanString() {
     int startLine = line, startColumn = column;
     char quote = currentChar();
-    advance(); // opening quote
+    advance(); 
 
     std::string value;
     while (!isAtEnd()) {
         if (currentChar() == quote) {
-            advance(); // closing quote
+            advance(); 
             return makeToken(TokenType::STRING_LITERAL, value, startLine, startColumn);
         }
 
@@ -165,7 +130,7 @@ Token Lexer::scanString() {
                 case '\\': value += '\\'; break;
                 case '"':  value += '"';  break;
                 case '\'': value += '\''; break;
-                default:   value += currentChar(); break; // unknown escape: keep as-is
+                default:   value += currentChar(); break; 
             }
             advance();
         } else {
@@ -178,17 +143,10 @@ Token Lexer::scanString() {
                               std::to_string(startLine) + ", column " + std::to_string(startColumn));
 }
 
-// ================================================================
-// Operator scanner: =  !=  <  <=  >  >=
-// ================================================================
-
 Token Lexer::scanOperator() {
     int startLine = line, startColumn = column;
     char c = currentChar();
     advance();
-
-    // If the next char is '=', consume it and return `withEq`;
-    // otherwise return `alone` (unconsumed).
     auto maybeEq = [&](TokenType withEq, TokenType alone) {
         std::string text(1, c);
         if (currentChar() == '=') { text += '='; advance(); return makeToken(withEq, text, startLine, startColumn); }
@@ -204,14 +162,10 @@ Token Lexer::scanOperator() {
     return makeToken(TokenType::UNKNOWN, std::string(1, c), startLine, startColumn); // unreachable via nextToken()'s dispatch
 }
 
-// ================================================================
-// Symbol scanner: *  (  )  ,  ; -
-// ================================================================
-
 Token Lexer::scanSymbol() {
     static const std::unordered_map<char, TokenType> symbols = {
         {'*', TokenType::STAR}, {'(', TokenType::LPAREN}, {')', TokenType::RPAREN},
-        {',', TokenType::COMMA}, {';', TokenType::SEMICOLON}, {'-', TokenType::MINUS},
+        {',', TokenType::COMMA}, {';', TokenType::SEMICOLON}, {'-', TokenType::MINUS},  {':', TokenType::COLON},
     };
 
     int startLine = line, startColumn = column;
@@ -222,10 +176,6 @@ Token Lexer::scanSymbol() {
     TokenType type = it != symbols.end() ? it->second : TokenType::UNKNOWN;
     return makeToken(type, std::string(1, c), startLine, startColumn);
 }
-
-// ================================================================
-// Get next token
-// ================================================================
 
 Token Lexer::nextToken() {
     while (!isAtEnd() && isWhitespace(currentChar())) advance();
@@ -238,16 +188,12 @@ Token Lexer::nextToken() {
     if (std::isdigit(static_cast<unsigned char>(c))) return scanNumber();
     if (c == '"' || c == '\'') return scanString();
     if (c == '=' || c == '!' || c == '<' || c == '>') return scanOperator();
-    if (c == '*' || c == '(' || c == ')' || c == ',' || c == ';' || c == '-') return scanSymbol();
+    if (c == '*' || c == '(' || c == ')' || c == ',' || c == ';' || c == '-' || c == ':') return scanSymbol();
 
     int startLine = line, startColumn = column;
     advance();
     return makeToken(TokenType::UNKNOWN, std::string(1, c), startLine, startColumn);
 }
-
-// ================================================================
-// Tokenize entire input
-// ================================================================
 
 std::vector<Token> Lexer::tokenize() {
     std::vector<Token> tokens;
@@ -259,16 +205,12 @@ std::vector<Token> Lexer::tokenize() {
     return tokens;
 }
 
-// ================================================================
-// Token type -> string
-// ================================================================
-
 std::string tokenTypeToString(TokenType type) {
     static const std::unordered_map<TokenType, std::string> names = {
         {TokenType::END_OF_FILE, "END_OF_FILE"}, {TokenType::UNKNOWN, "UNKNOWN"},
 
         {TokenType::CREATE, "CREATE"}, {TokenType::DROP, "DROP"}, {TokenType::DESCRIBE, "DESCRIBE"},
-        {TokenType::TABLE, "TABLE"},
+        {TokenType::TABLE, "TABLE"}, {TokenType::SHOW, "SHOW"}, {TokenType::TABLES, "TABLES"},
         {TokenType::INSERT, "INSERT"}, {TokenType::INTO, "INTO"}, {TokenType::VALUES, "VALUES"},
         {TokenType::UPDATE, "UPDATE"}, {TokenType::SET, "SET"},
         {TokenType::DELETE, "DELETE"},
@@ -299,7 +241,7 @@ std::string tokenTypeToString(TokenType type) {
         {TokenType::GREATER, "GREATER"}, {TokenType::GREATER_EQUAL, "GREATER_EQUAL"},
 
         {TokenType::STAR, "STAR"}, {TokenType::LPAREN, "LPAREN"}, {TokenType::RPAREN, "RPAREN"},
-        {TokenType::COMMA, "COMMA"}, {TokenType::SEMICOLON, "SEMICOLON"}, {TokenType::MINUS, "MINUS"},
+        {TokenType::COMMA, "COMMA"}, {TokenType::SEMICOLON, "SEMICOLON"}, {TokenType::MINUS, "MINUS"}, {TokenType::COLON, "COLON"},
     };
 
     auto it = names.find(type);

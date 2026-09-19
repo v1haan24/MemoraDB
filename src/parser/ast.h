@@ -15,6 +15,10 @@ struct DateLiteral {
     int year = 0;
     int month = 0;
     int day = 0;
+    int hour = 0;
+    int minute = 0;
+    int second = 0;
+    bool hasTime = false;
 };
 enum class CompareOp { EQ, NE, LT, LE, GT, GE, SIMILAR_TO };
 struct Condition {
@@ -38,6 +42,8 @@ struct DropTableStmt {
 };
 struct DescribeTableStmt {
     std::string tableName;
+};
+struct ShowTablesStmt {
 };
 struct InsertStmt {
     std::string tableName;
@@ -102,6 +108,7 @@ using Statement = std::variant<
     CreateTableStmt,
     DropTableStmt,
     DescribeTableStmt,
+    ShowTablesStmt,
     InsertStmt,
     UpdateStmt,
     DeleteStmt,

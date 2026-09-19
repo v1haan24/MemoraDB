@@ -10,6 +10,8 @@ enum class TokenType {
     DROP,
     DESCRIBE,
     TABLE,
+    SHOW,
+    TABLES,
 
     INSERT,
     INTO,
@@ -74,7 +76,8 @@ enum class TokenType {
     LPAREN,         
     RPAREN,         
     COMMA,          
-    SEMICOLON       
+    SEMICOLON,
+    COLON     
 };
 
 struct Token {

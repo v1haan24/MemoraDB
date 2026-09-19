@@ -1,24 +1,17 @@
 #include "parser.h"
 
-// Civil (Gregorian) leap-year rule: divisible by 4, except centuries, unless
-// also divisible by 400. Needed so "2023-02-29" is rejected but "2024-02-29"
-// and "2000-02-29" are accepted while "1900-02-29" is not.
 static bool isLeapYear(int year) {
     return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
 }
 
 static int daysInMonth(int year, int month) {
     static const int lengths[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    if (month < 1 || month > 12) return 31; // caller validates month range separately
+    if (month < 1 || month > 12) return 31; 
     if (month == 2 && isLeapYear(year)) return 29;
     return lengths[month - 1];
 }
 
 Value Parser::parseValue() {
-    // Unary minus: only meaningful directly in front of a numeric literal.
-    // (MINUS is also used as the YYYY-MM-DD separator in parseDateLiteral,
-    // but that path calls expect(INTEGER_LITERAL) directly and never goes
-    // through parseValue, so there's no ambiguity here.)
     bool negative = false;
     Token minusTok;
     if (check(TokenType::MINUS)) {
@@ -90,6 +83,39 @@ DateLiteral Parser::parseDateLiteral() {
                               " of year " + std::to_string(date.year) +
                               " has " + std::to_string(maxDay) + " days)",
                           dayTok.line, dayTok.column);
+    }
+    if (check(TokenType::INTEGER_LITERAL)) {
+        const Token& hourTok = advance();
+        expect(TokenType::COLON, "between hour and minute in a timestamp (expected HH:MM[:SS])");
+        const Token& minuteTok = expect(TokenType::INTEGER_LITERAL,
+                                        "for the minute in a timestamp (expected HH:MM[:SS])");
+
+        date.hour = std::stoi(hourTok.value);
+        date.minute = std::stoi(minuteTok.value);
+        date.second = 0;
+        date.hasTime = true;
+
+        if (match(TokenType::COLON)) {
+            const Token& secondTok = expect(TokenType::INTEGER_LITERAL,
+                                            "for the second in a timestamp (expected HH:MM:SS)");
+            date.second = std::stoi(secondTok.value);
+        }
+
+        if (date.hour < 0 || date.hour > 23) {
+            throw ParseError("Invalid hour " + std::to_string(date.hour) +
+                                  " in timestamp (must be between 0 and 23)",
+                              hourTok.line, hourTok.column);
+        }
+        if (date.minute < 0 || date.minute > 59) {
+            throw ParseError("Invalid minute " + std::to_string(date.minute) +
+                                  " in timestamp (must be between 0 and 59)",
+                              minuteTok.line, minuteTok.column);
+        }
+        if (date.second < 0 || date.second > 59) {
+            throw ParseError("Invalid second " + std::to_string(date.second) +
+                                  " in timestamp (must be between 0 and 59)",
+                              hourTok.line, hourTok.column);
+        }
     }
 
     return date;

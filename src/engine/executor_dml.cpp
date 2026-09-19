@@ -58,10 +58,10 @@ ExecResult Executor::run(const DropTableStmt& s) {
     if (!catalog.getTable(s.tableName)) {
         return ExecResult::Error("No such table: '" + s.tableName + "'");
     }
+    vectors.erase(s.tableName);
     if (!catalog.dropTable(s.tableName)) {
         return ExecResult::Error("Failed to drop table '" + s.tableName + "'");
     }
-    vectors.erase(s.tableName);
     return ExecResult::Ok("Dropped table '" + s.tableName + "'");
 }
 ExecResult Executor::run(const DescribeTableStmt& s) {
@@ -71,6 +71,11 @@ ExecResult Executor::run(const DescribeTableStmt& s) {
 
     catalog.describeTable(s.tableName);
     return ExecResult::Ok("Described table '" + s.tableName + "'");
+}
+ExecResult Executor::run(const ShowTablesStmt& s) {
+    (void)s;
+    catalog.showTables();
+    return ExecResult::Ok("Showed tables");
 }
 ExecResult Executor::run(const InsertStmt& s) {
     const auto insertStart = std::chrono::steady_clock::now();
