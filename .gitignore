@@ -1,0 +1,17 @@
+# Build output directories
+build/
+build-*/
+cmake-build-*/
+
+# Database runtime data directory
+data/
+
+# MkDocs rendered static site
+site/
+
+
+
+#script
+scripts/
+# CI/CD Workflows
+.github/

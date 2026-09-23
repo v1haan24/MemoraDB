@@ -1,0 +1,128 @@
+================================================================================
+MEMORADB BUILD & COMMAND REFERENCE (BEGINNER FRIENDLY)
+================================================================================
+
+--------------------------------------------------------------------------------
+1. INSTALL PREREQUISITES (ONE-TIME SETUP)
+--------------------------------------------------------------------------------
+
+### Windows (PowerShell as Administrator or User):
+Using winget (Windows Package Manager):
+    winget install --id Kitware.CMake -e
+    winget install --id Ninja-build.Ninja -e
+
+Compiler options (choose ONE):
+    Option 1: Visual Studio 2022 Community (Check "Desktop development with C++")
+    Option 2: MSYS2 MinGW-w64 (In MSYS2 UCRT64 shell: pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-make)
+
+### Linux (Ubuntu / Debian):
+    sudo apt update
+    sudo apt install -y git cmake ninja-build build-essential
+
+### Linux (Fedora):
+    sudo dnf install -y git cmake ninja-build gcc-c++ make
+
+### Linux (Arch Linux):
+    sudo pacman -S git cmake ninja base-devel
+
+### macOS:
+Install Homebrew if not installed (https://brew.sh), then:
+    brew install git cmake ninja
+
+
+--------------------------------------------------------------------------------
+2. CLONE THE REPOSITORY
+--------------------------------------------------------------------------------
+    git clone https://github.com/v1haan24/MemoraDB.git
+    cd MemoraDB
+
+
+--------------------------------------------------------------------------------
+3. NORMAL APPLICATION BUILD & RUN
+--------------------------------------------------------------------------------
+
+### Method A: With Ninja (Fastest, Recommended on all platforms)
+    # 1. Clean previous build if needed
+    Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue   # (Windows)
+    rm -rf build                                                     # (Linux / macOS)
+
+    # 2. Configure CMake with Ninja
+    cmake -G "Ninja" -S . -B build
+
+    # 3. Compile Release binary
+    cmake --build build --config Release
+
+    # 4. Launch MemoraDB
+    .\build\memora.exe     # Windows
+    ./build/memora         # Linux / macOS
+
+### Method B: Without Ninja (Standard Makefiles)
+    # Windows (using MinGW Makefiles):
+    cmake -G "MinGW Makefiles" -S . -B build
+    cmake --build build --config Release
+    .\build\memora.exe
+
+    # Linux / macOS (using standard Makefiles):
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    cmake --build build -j$(nproc)
+    ./build/memora
+
+
+--------------------------------------------------------------------------------
+4. DEVELOPER TEST SUITE BUILD & RUN
+--------------------------------------------------------------------------------
+(Tests are disabled in normal builds. Use -DMEMORA_BUILD_TESTS=ON to enable).
+
+### Configure & Compile Tests:
+    # With Ninja:
+    cmake -G "Ninja" -S . -B build-tests -DMEMORA_BUILD_TESTS=ON
+    cmake --build build-tests
+
+    # Without Ninja (Windows MinGW):
+    cmake -G "MinGW Makefiles" -S . -B build-tests -DMEMORA_BUILD_TESTS=ON
+    cmake --build build-tests
+
+### Run All Automated Tests:
+    ctest --test-dir build-tests --output-on-failure
+
+### Run Specific Test Suites (Using GoogleTest Filters):
+    # Windows:
+    .\build-tests\test\memora_tests.exe --gtest_filter=TemporalTest.*
+    .\build-tests\test\memora_tests.exe --gtest_filter=ParserTest.*
+    .\build-tests\test\memora_tests.exe --gtest_filter=VectorTest.*
+    .\build-tests\test\memora_tests.exe --gtest_filter=IntegrationTest.*
+
+    # Linux / macOS:
+    ./build-tests/test/memora_tests --gtest_filter=TemporalTest.*
+
+
+--------------------------------------------------------------------------------
+5. DOCUMENTATION (MKDOCS MATERIAL)
+--------------------------------------------------------------------------------
+    # Install documentation generator:
+    pip install mkdocs-material
+
+    # Build static HTML site:
+    mkdocs build --strict
+
+    # Run local live-reload documentation server (http://127.0.0.1:8000):
+    mkdocs serve
+
+
+--------------------------------------------------------------------------------
+6. GIT WORKFLOW (PULL, COMMIT, PUSH)
+--------------------------------------------------------------------------------
+    # Check what has changed:
+    git status
+
+    # Pull latest changes from GitHub before making changes:
+    git pull origin main
+
+    # Stage all modified and new files:
+    git add .
+
+    # Commit with a clear descriptive message:
+    git commit -m "Your commit message here"
+
+    # Push to GitHub:
+    git push origin main
