@@ -1,0 +1,147 @@
+site_name: MemoraDB Documentation
+site_description: Official technical documentation and user manual for MemoraDB, a custom C++ DBMS with temporal and semantic search capabilities.
+site_author: MemoraDB Team
+site_url: https://v1haan24.github.io/MemoraDB/
+
+repo_name: v1haan24/MemoraDB
+repo_url: https://github.com/v1haan24/MemoraDB
+
+theme:
+  name: material
+  language: en
+  # Branding & Logo configuration (drop your assets in docs/assets/)
+  logo: assets/logo.png
+  favicon: assets/favicon.ico
+  palette:
+    # Primary MemoraDB Theme (Dark Terminal Identity)
+    - scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    # Light Mode (Secondary / Accessibility Option)
+    - scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.tracking
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.keys
+  - pymdownx.mark
+  - attr_list
+  - def_list
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+
+copyright: "MemoraDB"
+
+extra:
+  generator: false
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Requirements: getting-started/requirements.md
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quick-start.md
+      - First Steps: getting-started/first-steps.md
+  - Concepts:
+      - Overview: concepts/overview.md
+      - Database Basics: concepts/database-basics.md
+      - Temporal Data: concepts/temporal-data.md
+      - Semantic Search: concepts/semantic-search.md
+      - Snapshots & Versions: concepts/snapshots-and-versions.md
+  - SQL:
+      - Overview: sql/overview.md
+      - CREATE TABLE: sql/create-table.md
+      - DROP TABLE: sql/drop-table.md
+      - DESCRIBE TABLE: sql/describe-table.md
+      - SHOW TABLES: sql/show-tables.md
+      - INSERT: sql/insert.md
+      - SELECT: sql/select.md
+      - UPDATE: sql/update.md
+      - DELETE: sql/delete.md
+      - WHERE Clause: sql/where.md
+      - ORDER BY: sql/order-by.md
+      - LIMIT: sql/limit.md
+  - Temporal:
+      - Overview: temporal/overview.md
+      - AS OF: temporal/as-of.md
+      - BETWEEN: temporal/between.md
+      - HISTORY: temporal/history.md
+      - EVOLUTION: temporal/evolution.md
+      - COMPARE: temporal/compare.md
+      - ROLLBACK: temporal/rollback.md
+      - COMPACT TABLE: temporal/compact.md
+      - Timestamps & Dates: temporal/timestamps.md
+  - Semantic:
+      - Overview: semantic/overview.md
+      - SIMILAR TO Queries: semantic/similar-to.md
+      - Embedding Pipeline: semantic/embedding-pipeline.md
+      - How It Works: semantic/how-it-works.md
+  - Architecture:
+      - Overview: architecture/overview.md
+      - Query Pipeline: architecture/query-pipeline.md
+      - Lexer: architecture/lexer.md
+      - Parser: architecture/parser.md
+      - Executor: architecture/executor.md
+      - Storage Engine: architecture/storage-engine.md
+      - Temporal Engine: architecture/temporal-engine.md
+      - Semantic Engine: architecture/semantic-engine.md
+  - Guides:
+      - Tutorials:
+          - Student Database: tutorials/student-database.md
+          - Temporal Workflow: tutorials/temporal-workflow.md
+          - Semantic Search: tutorials/semantic-search.md
+          - Complete Workflow: tutorials/complete-example.md
+      - Reference:
+          - CLI & REPL: reference/cli.md
+          - Data Types: reference/data-types.md
+          - Grammar: reference/grammar.md
+  - Development:
+      - Building from Source: development/building-from-source.md
+      - Repository Structure: development/repository-structure.md
+      - Dependencies: development/dependencies.md
+      - Testing: development/testing.md
+      - Troubleshooting: troubleshooting/common-issues.md
+  - Roadmap: roadmap.md
+  - Limitations: limitations.md

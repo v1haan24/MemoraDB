@@ -1,0 +1,43 @@
+# ============================================================
+# MemoraDB Setup Repository .gitignore
+# ============================================================
+
+# Build output directories
+build/
+build-*/
+cmake-build-*/
+release/
+dist/
+dist-*/
+
+# Packaging working directories and temporary tools
+*.AppDir/
+squashfs-root/
+appimagetool*
+
+# Compiled binary outputs (published via GitHub Releases)
+*.exe
+*.dll
+*.dylib
+*.so
+*.so.*
+*.AppImage
+*.dmg
+*.tar.gz
+*.zip
+
+# Compiler objects and libraries
+*.o
+*.obj
+*.a
+*.lib
+*.pdb
+
+# Local database runtime files
+data/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
